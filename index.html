@@ -45,9 +45,9 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 #stBar{width:88px;height:10px;border-radius:6px;background:#e5d3a8;overflow:hidden;border:2px solid var(--wood)}
 #stFill{height:100%;width:100%;background:linear-gradient(#ffc36b,#f07b2e);transition:width .3s}
 #stFill.low{background:linear-gradient(#ff8a7a,#d8392b)}
-#iconBtns{display:flex;gap:6px}
-.ibtn{width:40px;height:40px;display:grid;place-items:center;padding:0;position:relative;font:400 17px "Mochiy Pop One",sans-serif}
-.ibtn canvas{width:30px;height:30px}
+#iconBtns{display:flex;gap:5px}
+.ibtn{width:37px;height:37px;display:grid;place-items:center;padding:0;position:relative;font:400 17px "Mochiy Pop One",sans-serif}
+.ibtn canvas{width:28px;height:28px}
 .ibtn.off{opacity:.55}
 
 #toolbar{position:absolute;left:0;right:0;bottom:0;padding:0 6px calc(env(safe-area-inset-bottom,0px) + 10px);
@@ -104,6 +104,25 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
   font:400 18px "Mochiy Pop One",sans-serif}
 .kv{display:flex;justify-content:space-between;gap:10px;font-variant-numeric:tabular-nums}
 
+#talk{position:absolute;left:0;right:0;bottom:0;z-index:15;padding:40px 10px calc(env(safe-area-inset-bottom,0px) + 12px);
+  background:linear-gradient(rgba(30,20,8,0),rgba(30,20,8,.35) 40%);cursor:pointer}
+.tbox{max-width:560px;margin:0 auto;display:flex;gap:12px;align-items:flex-start;padding:12px;background:var(--paper);
+  border:4px solid var(--wood);border-radius:18px;box-shadow:0 5px 0 var(--wood-d),0 16px 32px rgba(0,0,0,.35);animation:pop .2s ease-out}
+#tPortrait{width:76px;height:76px;flex:none;border-radius:14px;border:3px solid #d9bf8a}
+.tmain{flex:1;min-width:0;position:relative}
+#tName{font:400 15px "Mochiy Pop One",sans-serif;color:#7a4a1c;margin-bottom:4px}
+#tName .hearts{color:#e0577a;font-size:12px;letter-spacing:.05em}
+#tText{font-size:15px;line-height:1.65;min-height:3.3em;font-weight:700}
+#tChoices{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+#tChoices .btn{width:100%;text-align:left;padding:9px 14px}
+#tNext{position:absolute;right:2px;bottom:-4px;color:var(--wood);animation:bob .8s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(3px)}}
+.srow{flex-wrap:wrap}
+.pricebar{display:flex;align-items:center;gap:5px;width:100%;flex-wrap:wrap;justify-content:flex-end}
+.btn.sm{min-width:0;padding:5px 9px;font-size:13px;border-width:2px;border-radius:10px;box-shadow:0 2px 0 var(--wood-d)}
+.btn.sm.auto{background:linear-gradient(#e6f5ff,#b8dcf5);border-color:#3f7fbf;box-shadow:0 2px 0 #2f5f8f}
+.price{width:68px;padding:5px 6px;font:800 15px "M PLUS Rounded 1c",sans-serif;text-align:right;border:2px solid var(--wood);border-radius:9px;background:#fff;color:var(--ink);font-variant-numeric:tabular-nums}
+.pricebar .g{font-weight:800;margin-left:-2px}
 #fade{position:absolute;inset:0;z-index:10;background:#0b0d1a;opacity:0;pointer-events:none;transition:opacity .7s}
 #fade.on{opacity:1}
 
@@ -132,6 +151,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
       <div id="stPanel" class="panel">体力<div id="stBar"><div id="stFill"></div></div></div>
       <div id="iconBtns">
         <button class="ibtn panel" id="centerBtn" aria-label="キャラクターの場所を表示"><canvas width="60" height="60"></canvas></button>
+        <button class="ibtn panel" id="questBtn" aria-label="おねがい帳"><canvas width="60" height="60"></canvas><span class="badge" id="questBadge" hidden>!</span></button>
         <button class="ibtn panel" id="bagBtn" aria-label="バッグ"><canvas width="60" height="60"></canvas><span class="badge" id="bagBadge" hidden>0</span></button>
         <button class="ibtn panel" id="musicBtn" aria-label="音楽">♪</button>
         <button class="ibtn panel" id="helpBtn" aria-label="あそびかた">?</button>
@@ -157,6 +177,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
     </div>
     <div id="titleTip">スマホでタップして遊べる、のんびり農場ぐらし</div>
   </div>
+  <div id="talk" hidden><div class="tbox"><canvas id="tPortrait" width="192" height="192"></canvas><div class="tmain"><div id="tName"></div><div id="tText"></div><div id="tChoices"></div><div id="tNext" hidden>▼</div></div></div></div>
   <div id="modal" hidden><div class="sheet"><h2 id="mTitle"></h2><div class="body" id="mBody"></div><div class="btns" id="mBtns"></div></div></div>
   <div id="fade"></div>
 </div>
@@ -582,18 +603,6 @@ function spriteCoop(se){
   g.fillStyle='#e7c46a';for(let i=0;i<6;i++){ell(g,26+i*6,H-10,6,4,'#e7c46a');ell(g,W-26-i*6,H-10,6,4,'#d9b456');}
   return c;
 }
-function spriteBin(se){
-  const [c,g]=mk(TS,TS+18);const y0=22;
-  ell(g,32,TS+14,28,6,'rgba(0,0,0,.25)');
-  g.fillStyle='#a8743f';rr(g,6,y0+8,52,TS-12,4);g.fill();
-  for(let y=y0+18;y<y0+TS-6;y+=12)line(g,8,y,56,y,'rgba(80,45,15,.35)',1.5);
-  g.fillStyle='#6f7680';g.fillRect(6,y0+14,52,3);g.fillRect(6,y0+TS-10,52,3);
-  g.fillStyle='#8a5a2c';rr(g,2,y0,60,14,5);g.fill();g.fillStyle='#b98755';rr(g,4,y0+2,56,6,3);g.fill();
-  if(se===3){g.fillStyle='#f7faff';rr(g,2,y0-4,60,9,4);g.fill();}
-  g.fillStyle='#fff3d0';rr(g,18,y0+22,28,18,4);g.fill();
-  g.fillStyle='#8a3a2a';g.font='800 12px "M PLUS Rounded 1c",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('出荷',32,y0+31.5);
-  return c;
-}
 const BARN_O={x:BUILD.barn.x*TS-12,y:BUILD.barn.y*TS-104};
 const BARN_W=4*TS+24,BARN_H=3*TS+104;
 function spriteBarn(se){
@@ -659,7 +668,7 @@ function buildSprites(se){
   SPR.se=se;SPR.ground=renderGround(se);
   SPR.tree=[spriteTree(se,0),spriteTree(se,1)];SPR.pine=spritePine(se);SPR.bush=spriteBush(se);
   SPR.lamp=spriteLamp();SPR.scare=spriteScare(se);SPR.house=spriteHouse(se);SPR.shop=spriteShop(se);
-  SPR.coop=spriteCoop(se);SPR.bin=spriteBin(se);SPR.barn=spriteBarn(se);SPR.trough=spriteTrough(se);SPR.soil=spriteSoil(false);SPR.soilWet=spriteSoil(true);
+  SPR.coop=spriteCoop(se);SPR.stand=spriteStand(se);SPR.barn=spriteBarn(se);SPR.trough=spriteTrough(se);SPR.soil=spriteSoil(false);SPR.soilWet=spriteSoil(true);
   for(const k in cropCache)delete cropCache[k];
 }
 
@@ -800,6 +809,9 @@ function drawToolShape(g,tool,seedCol){
 function iconCanvas(cnv,key){
   const g=cnv.getContext('2d');const s=cnv.width;g.clearRect(0,0,s,s);g.save();g.scale(s/80,s/80);
   const T={hoe:1,water:1,seed:1,sickle:1,hammer:1,milker:1,hand:1,rod:1};
+  if(key==='quest'){g.fillStyle='#8b5a2b';rr(g,14,12,50,58,6);g.fill();g.fillStyle='#fffaf0';rr(g,18,14,44,52,4);g.fill();
+    for(let i=0;i<4;i++)line(g,26,28+i*9,54,28+i*9,'#c9b48a',2.5);g.fillStyle='#e0574a';g.beginPath();g.moveTo(48,10);g.lineTo(58,10);g.lineTo(58,30);g.lineTo(53,25);g.lineTo(48,30);g.closePath();g.fill();
+    g.restore();return;}
   if(key==='center'){g.beginPath();g.arc(40,42,24,0,Math.PI*2);g.strokeStyle='#8b5a2b';g.lineWidth=4;g.stroke();
     [[40,10,40,20],[40,64,40,74],[8,42,18,42],[62,42,72,42]].forEach(([a,b,c,d])=>line(g,a,b,c,d,'#8b5a2b',4));
     circ(g,40,46,11,'#f8d3ae');ell(g,40,38,17,5.5,'#e8c05a');g.fillStyle='#f6da86';g.beginPath();g.ellipse(40,35,9,7,0,Math.PI,0);g.fill();g.fillStyle='#d8443a';g.fillRect(31,33,18,3);
@@ -886,7 +898,7 @@ function newState(){
   s.chickens=[mkChick(0,3.5,14.5),mkChick(1,4.6,16.2)];
   s.cows=[mkCow(0,28.5,10.5)];
   s.eggs=[{x:2,y:16,big:false}];
-  return s;
+  return ensureVillage(s);
 }
 function mkCow(n,x,y){return{name:COW_NAMES[n%COW_NAMES.length],x,y,tx:x,ty:y,face:-1,timer:Math.random()*3,graze:0,moving:false,petted:false,milked:false,love:0,freeze:0,walk:0};}
 // older saves were made on a 28-tile-wide map without cows
@@ -895,7 +907,7 @@ function migrate(s){
   if(s.field.length===28*MH&&MW!==28){const f=new Array(MW*MH).fill(null);for(let y=0;y<MH;y++)for(let x=0;x<28;x++)f[idx(x,y)]=s.field[x+y*28];s.field=f;}
   if(s.field.length!==MW*MH)return null;
   if(!s.cows){s.cows=[mkCow(0,28.5,10.5)];s.nextCow=1;}
-  return s;
+  return ensureVillage(s);
 }
 function mkChick(n,x,y){return{name:CHICK_NAMES[n%CHICK_NAMES.length],x,y,tx:x,ty:y,face:1,timer:Math.random()*2,peck:0,moving:false,petted:false,love:0,freeze:0};}
 const cellAt=(x,y)=>inB(x,y)?S.field[idx(x,y)]:null;
@@ -923,6 +935,7 @@ function goalFor(t){
   if(t.type==='shop')return(x,y)=>y===4&&x>=22&&x<=24;
   let r;if(BUILD[t.type])r=BUILD[t.type];
   else if(t.type==='cow')r={x:Math.floor(t.ref.x),y:Math.floor(t.ref.y),w:1,h:1};
+  else if(t.type==='npc'){const n=NPC_RT[t.key];r=n?{x:n.tx,y:n.ty,w:1,h:1}:{x:P.tx,y:P.ty,w:1,h:1};}
   else if(t.type==='chicken')r={x:Math.floor(t.ref.x),y:Math.floor(t.ref.y),w:1,h:1};
   else r={x:t.x,y:t.y,w:1,h:1};
   return(x,y)=>rectDist(x,y,r)<=1;
@@ -980,7 +993,7 @@ function perform(t){
       case 'fish':startFish(wx,wy);break;
       case 'refill':S.can.lv=CAN_LV[S.can.lvl];sfx('water');toast('じょうろを満タンにした！');
         for(let i=0;i<10;i++)PT.push({x:wx+(Math.random()-.5)*20,y:wy,vx:(Math.random()-.5)*50,vy:-80-Math.random()*60,g:300,life:0,max:.6,type:'drop',size:3,col:'#bfe6ff'});break;
-      case 'harvest':{const d=CROPS[c.crop.t];S.bag[c.crop.t]=(S.bag[c.crop.t]||0)+1;
+      case 'harvest':{const d=CROPS[c.crop.t];S.bag[c.crop.t]=(S.bag[c.crop.t]||0)+1;S.stats.harvested++;
         if(d.regrow)c.crop.g=d.days-d.regrow;else c.crop=null;
         sparkle(wx,wy-10,'#fff4b0',10);floatText(wx,wy-30,`${d.name} +1`,'#fff');sfx('harvest');bagPulse();break;}
     }
@@ -992,7 +1005,9 @@ function perform(t){
     sfx('cluck');floatText(ch.x*TS,ch.y*TS-44,first?`${ch.name}がよろこんでいる`:`${ch.name}はごきげん`,'#ffe3ec');return;}
   if(t.type==='egg'){const e=t.ref;const i=S.eggs.indexOf(e);if(i<0)return;S.eggs.splice(i,1);const k=e.big?'eggL':'egg';S.bag[k]=(S.bag[k]||0)+1;
     faceTo(e.x,e.y);P.act={tool:null,t:0,dur:.2};sparkle(wx,wy,'#fff4b0',8);floatText(wx,wy-20,`${ITEMS[k].name} +1`,'#fff');sfx('pickup');bagPulse();return;}
-  if(t.type==='bin'){faceTo(BUILD.bin.x,BUILD.bin.y);shipAll();return;}
+  if(t.type==='bin'){faceTo(BUILD.bin.x,BUILD.bin.y);openStand();return;}
+  if(t.type==='npc'){const n=NPC_RT[t.key];if(!n){toast('帰ってしまったみたい');return;}if(Math.hypot(n.x-(P.tx+.5),n.y-(P.ty+.5))>1.8){if((t.tries=(t.tries||0)+1)<4)queue.unshift(t);return;}
+    faceTo(n.tx,n.ty);const dx=P.x-n.x,dy=P.y-n.y;n.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');n.freeze=6;talkTo(t.key);return;}
   if(t.type==='house'){P.dir='up';openHouse();return;}
   if(t.type==='shop'){P.dir='up';if(S.time>=480&&S.time<1080)openShop();else toast('よろず屋は 8:00〜18:00 だよ');return;}
   if(t.type==='cow'){const cw=t.ref;const d=Math.hypot(cw.x-(P.tx+.5),cw.y-(P.ty+.5));if(d>2.2){if((t.tries=(t.tries||0)+1)<3)queue.unshift(t);return;}
@@ -1000,7 +1015,7 @@ function perform(t){
     if(S.tool==='milker'){
       if(cw.milked){toast(`${cw.name}のミルクは今日もうしぼったよ。また明日！`);return;}
       if(!spend('milk'))return;
-      cw.milked=true;const k=milkKind(cw);S.bag[k]=(S.bag[k]||0)+1;P.act={tool:'milker',t:0,dur:.6};
+      cw.milked=true;const k=milkKind(cw);S.bag[k]=(S.bag[k]||0)+1;S.stats.milked++;P.act={tool:'milker',t:0,dur:.6};
       for(let i=0;i<14;i++)PT.push({x:cw.x*TS+(Math.random()-.5)*14,y:cw.y*TS-8,vx:(Math.random()-.5)*50,vy:-60-Math.random()*70,g:320,life:0,max:.6,type:'drop',size:2.6,col:'#ffffff'});
       sparkle(cw.x*TS,cw.y*TS-30,'#fff4b0',8);floatText(cw.x*TS,cw.y*TS-56,`${ITEMS[k].name} +1`,'#fff');sfx('milk');bagPulse();return;}
     const first=!cw.petted;cw.petted=true;
@@ -1026,7 +1041,7 @@ function rollFish(){
 }
 function reelIn(){
   const f=P.fish;if(!f)return;
-  if(f.st==='bite'){const k=rollFish();f.st='caught';f.t=0;f.k=k;S.bag[k]=(S.bag[k]||0)+1;
+  if(f.st==='bite'){const k=rollFish();f.st='caught';f.t=0;f.k=k;S.bag[k]=(S.bag[k]||0)+1;S.stats.fish++;
     for(let i=0;i<14;i++)PT.push({x:f.bx+(Math.random()-.5)*20,y:f.by,vx:(Math.random()-.5)*80,vy:-90-Math.random()*80,g:320,life:0,max:.6,type:'drop',size:3,col:'#cfeaff'});
     sparkle(P.x*TS,P.y*TS-60,'#fff4b0',10);floatText(P.x*TS,P.y*TS-80,`${FISH[k].name} +1`,'#fff');toast(`${FISH[k].name}を釣った！ (売値 ${FISH[k].sell}G)`);sfx('catch');bagPulse();}
   else if(f.st==='wait'){toast('まだ早かった…。浮きが沈んだらタップ！');P.fish=null;}
@@ -1059,7 +1074,7 @@ const haveCount=k=>(GROUP[k]||[k]).reduce((a,x)=>a+(S.bag[x]||0),0);
 function consume(k,n){for(const x of GROUP[k]||[k]){while(n>0&&S.bag[x]>0){S.bag[x]--;n--;}if(!S.bag[x])delete S.bag[x];}}
 const canCook=d=>Object.entries(d.need).every(([k,n])=>haveCount(k)>=n);
 function openHouse(){
-  openModal('おうち',`<p style="margin:0">キッチンで料理したり、ベッドで休んだりできます。</p><p class="note">料理は1品20分。食べると体力が回復し、出荷すると素材より高く売れます。</p>`,
+  openModal('おうち',`<p style="margin:0">キッチンで料理したり、ベッドで休んだりできます。</p><p class="note">料理は1品20分。食べると体力が回復し、直売所では素材より高く売れます。</p>`,
     [{label:'とじる',fn:closeModal},{label:'料理する',fn:openCook},{label:'寝る',cls:'go',fn:()=>{closeModal();sleep(false);}}]);
 }
 function openCook(){
@@ -1071,18 +1086,11 @@ function openCook(){
     <p class="note">ミルク・たまご・魚はどのサイズや種類でも使えます。できた料理はバッグから食べられます。</p>`;
   openModal('キッチン',h,[{label:'もどる',fn:openHouse}]);
   $('#mBody').onclick=e=>{const b=e.target.closest('[data-cook]');if(!b)return;const k=b.dataset.cook,d=DISHES[k];if(!canCook(d))return;
-    for(const [nk,n] of Object.entries(d.need))consume(nk,n);S.bag[k]=(S.bag[k]||0)+1;S.time+=20;sfx('cook');toast(`${d.name}ができた！`);bagPulse();
+    for(const [nk,n] of Object.entries(d.need))consume(nk,n);S.bag[k]=(S.bag[k]||0)+1;S.time+=20;S.stats.cooked++;sfx('cook');toast(`${d.name}ができた！`);bagPulse();
     const sc=$('#mBody').scrollTop;openCook();$('#mBody').scrollTop=sc;};
 }
 function eatDish(k){const d=DISHES[k];if(!d||!(S.bag[k]>0))return;S.bag[k]--;if(!S.bag[k])delete S.bag[k];
   S.stamina=Math.min(S.maxSt,S.stamina+d.st);sfx('pickup');toast(`${d.name}を食べた！ 体力 +${d.st}`);}
-function shipAll(){
-  const keys=Object.keys(S.bag).filter(k=>S.bag[k]>0);
-  if(!keys.length){toast('出荷するものがない');return;}
-  let sum=0;keys.forEach(k=>{S.bin[k]=(S.bin[k]||0)+S.bag[k];sum+=S.bag[k]*ITEMS[k].sell;});S.bag={};S.binTotal+=sum;
-  sfx('coin');const b=BUILD.bin;floatText((b.x+.5)*TS,b.y*TS-10,`+${sum}G`,'#ffe27a');sparkle((b.x+.5)*TS,b.y*TS+10,'#ffe27a',12);
-  toast(`出荷箱に入れた！ 明日の朝 ${S.binTotal.toLocaleString()}G 受け取れる`);bagPulse();
-}
 
 /* ================= particles ================= */
 const PT=[],FT=[],BF=[],FF=[];
@@ -1119,6 +1127,7 @@ function sfx(n){if(!AC)return;const t=AC.currentTime;
     case 'buy':tone(mf(76),.08,'triangle',.12,t);tone(mf(83),.16,'triangle',.12,t+.08);break;
     case 'step':noise(.04,.05,700);break;
     case 'moo':tone(150,.7,'sawtooth',.06,t,110);tone(152,.7,'triangle',.08,t,112);break;
+    case 'blip':tone(mf(79+Math.floor(Math.random()*3)),.04,'square',.025,t);break;
     case 'cast':noise(.25,.25,2500,'highpass');tone(300,.2,'sine',.08,t+.2,120);break;
     case 'bite':tone(700,.12,'sine',.2,t,250);tone(700,.12,'sine',.2,t+.15,250);break;
     case 'catch':noise(.3,.3,1200);[76,79,83,88].forEach((m,i)=>tone(mf(m),.2,'triangle',.14,t+.1+i*.07));break;
@@ -1344,7 +1353,9 @@ function render(t,dt){
   list.push({y:(BUILD.shop.y+BUILD.shop.h)*TS,f:()=>{ctx.drawImage(SPR.shop,SHOP_O.x,SHOP_O.y);
     if(night>0){ell(ctx,SHOP_O.x+3*TS+24-17,SHOP_O.y+58+38+32,8,11,`rgba(255,200,110,${night})`);}}});
   list.push({y:(BUILD.coop.y+BUILD.coop.h)*TS,f:()=>{ctx.drawImage(SPR.coop,COOP_O.x,COOP_O.y);if(night>0)circ(ctx,COOP_O.x+(3*TS+16)/2,COOP_O.y+64,10,`rgba(255,210,110,${night})`);}});
-  list.push({y:(BUILD.bin.y+1)*TS,f:()=>ctx.drawImage(SPR.bin,BUILD.bin.x*TS,BUILD.bin.y*TS-18)});
+  list.push({y:(BUILD.bin.y+1)*TS+1,f:()=>drawStand(ctx)});
+  for(const k in NPC_RT){const n=NPC_RT[k];list.push({y:n.y*TS+18,f:()=>{drawVillager(ctx,NPCS[k].look,n.x*TS,n.y*TS+18,n.dir,n.walk,n.moving,t);const m=npcMark(k);if(m)drawBubble(ctx,n.x*TS,n.y*TS-50+Math.sin(t*4)*2,m[0],m[1]);}});}
+  for(const c of customers)list.push({y:c.y*TS+18,f:()=>{drawVillager(ctx,c.look,c.x*TS,c.y*TS+18,c.dir,c.walk,c.moving,t);if(c.bt>0)drawBubble(ctx,c.x*TS,c.y*TS-50,c.bubble,c.bubble==='♪'?'#e0577a':null);}});
   for(let y=FIELD.y0;y<=FIELD.y1;y++)for(let x=FIELD.x0;x<=FIELD.x1;x++){const c=S.field[idx(x,y)];if(!c||!inV(x,y))continue;
     if(c.crop)list.push({y:y*TS+52,f:()=>drawCrop(ctx,c.crop,x,y,t)});
     if(c.obj)list.push({y:y*TS+50,f:()=>drawObstacle(ctx,c,x,y)});}
@@ -1453,6 +1464,7 @@ function update(dt,t){
     if(d>.05&&cw.graze<=0){const st=Math.min(d,.55*dt);cw.x+=dx/d*st;cw.y+=dy/d*st;cw.walk+=st*9;if(Math.abs(dx)>.02)cw.face=dx>0?1:-1;cw.moving=true;}else cw.moving=false;
   }
   if(onTitle||paused)return;
+  updateVillagers(dt);updateCustomers(dt);
   // time
   S.time+=dt*1.6667;
   const hr=Math.floor(S.time/60);
@@ -1486,6 +1498,9 @@ function rollWeather(se){const r=Math.random();if(se===3)return r<.35?'snow':'su
 function endDay(passed){
   const earned=S.binTotal,lines=Object.entries(S.bin).map(([k,n])=>({k,n,v:n*ITEMS[k].sell}));
   S.money+=earned;S.bin={};S.binTotal=0;
+  const sales=S.salesToday;S.salesToday={};
+  for(const k in S.npc){S.npc[k].talked=false;S.npc[k].gifted=false;}
+  customers=[];for(const k in NPC_RT)delete NPC_RT[k];
   for(let y=FIELD.y0;y<=FIELD.y1;y++)for(let x=FIELD.x0;x<=FIELD.x1;x++){const c=S.field[idx(x,y)];if(!c)continue;
     if(c.crop&&!c.crop.dead){if(c.wet)c.crop.g=Math.min(c.crop.g+1,CROPS[c.crop.t].days);}
     else if(!c.crop){if(c.til&&Math.random()<.04)c.til=0;else if(!c.til&&!c.obj&&Math.random()<.02)c.obj='weed';}
@@ -1506,8 +1521,10 @@ function endDay(passed){
   S.time=360;S.stamina=passed?Math.round(S.maxSt/2):S.maxSt;
   P.x=DOOR.x+.5;P.y=DOOR.y+.5;P.tx=DOOR.x;P.ty=DOOR.y;P.dir='down';P.path=[];P.act=null;P.fish=null;queue=[];cur=null;lastHour=-1;
   if(seasonChanged||SPR.se!==S.season)buildSprites(S.season);
+  const missed=S.daily&&!S.daily.done?S.daily:null;
+  updateMarket();newDaily();
   save();
-  return{earned,lines,passed,seasonChanged};
+  return{earned,lines,passed,seasonChanged,sales,missed};
 }
 function sleep(passed){
   paused=true;$('#fade').classList.add('on');sfx('tap');
@@ -1517,25 +1534,347 @@ function wakeUp(passed){
   {const r=endDay(passed);centerOnPlayer(true);
     let html='';
     if(r.passed)html+=`<p style="margin:0 0 10px">夜中まで働きすぎて倒れてしまった…。今日は体力が半分からのスタート。</p>`;
-    if(r.lines.length){html+=`<div class="sec">きのうの出荷</div><div class="list">`+r.lines.map(l=>`<div class="kv"><span>${ITEMS[l.k].name} × ${l.n}</span><span>${l.v.toLocaleString()}G</span></div>`).join('')+`</div>
-      <div class="total"><span>売上</span><span>${r.earned.toLocaleString()}G</span></div>`;}
-    else html+=`<p style="margin:0">きのうは出荷なし。作物やたまごを出荷箱に入れると、翌朝お金になるよ。</p>`;
+    const sl=Object.entries(r.sales);
+    if(sl.length){html+=`<div class="sec">きのうの直売所</div><div class="list">`+sl.map(([k,v])=>`<div class="kv"><span>${ITEMS[k].name} × ${v.n}</span><span>${v.g.toLocaleString()}G</span></div>`).join('')+`</div>
+      <div class="total"><span>売上</span><span>${sl.reduce((a,[,v])=>a+v.g,0).toLocaleString()}G</span></div>`;}
+    else html+=`<p style="margin:0">きのうは直売所で何も売れなかった。家の横の直売所に商品を並べると、8:00〜18:00にお客さんが買いに来るよ。</p>`;
+    if(r.lines.length)html+=`<p class="note">出荷箱に残っていた分 ${r.earned.toLocaleString()}G も受け取った。</p>`;
+    if(r.missed)html+=`<p class="note">${NPCS[r.missed.npc].name}のおねがい(${itemName(r.missed.k)})は期限が過ぎてしまった。</p>`;
+    {const up=Object.keys(CROPS).filter(k=>CROPS[k].season===S.season).sort((a,b)=>S.mkt[b]-S.mkt[a])[0];
+      if(up&&S.mkt[up]>1.08)html+=`<p class="note">今日の相場: <b>${CROPS[up].name}</b>が高い (市場価格 ${marketPrice(up)}G)</p>`;}
+    const d=S.daily;html+=`<p class="note">今日のおねがい: ${NPCS[d.npc].name}「${itemName(d.k)}が${d.n}つほしい」 お礼 ${d.reward.toLocaleString()}G</p>`;
     if(r.seasonChanged)html+=`<p style="margin:12px 0 0;font-weight:800;color:${SEASON_COL[S.season]}">季節が「${SEASONS[S.season]}」になった！よろず屋に${SEASONS[S.season]}のタネが入荷したよ。</p>`;
     html+=`<p class="note">今日の天気: ${wLabel(S.weather)} ／ あしたの予報: ${wLabel(S.tomorrow)}</p>`;
     openModal(`${S.year>1?S.year+'年目 ':''}${SEASONS[S.season]} ${S.day}日 (${WEEK[S.total%7]}) の朝`,html,[{label:'おはよう！',cls:'go',fn:()=>{closeModal();$('#fade').classList.remove('on');}}],true);
   }
 }
 function passOut(){queue=[];cur=null;sleep(true);}
-function askSleep(){openModal('おやすみしますか？',`<p style="margin:0">眠ると次の日の朝 6:00 になります。出荷箱の売上は朝に受け取れます。<br>水をあげた作物は夜のうちに育つよ。</p>`,
+function askSleep(){openModal('おやすみしますか？',`<p style="margin:0">眠ると次の日の朝 6:00 になります。直売所の売上はその場でもらえます。<br>水をあげた作物は夜のうちに育つよ。</p>`,
   [{label:'まだ起きてる',fn:closeModal},{label:'寝る',cls:'go',fn:()=>{closeModal();sleep(false);}}]);}
 const wLabel=w=>({sun:'晴れ',rain:'雨',snow:'雪'})[w];
 
+/* ================= market & farm stand ================= */
+const STAND_SLOTS=6;
+const itemName=k=>GROUP_NAME[k]||ITEMS[k].name;
+const repKey=k=>k==='fish'?'funa':GROUP[k]?GROUP[k][0]:k;
+// market price moves every morning; crops sold out of season fetch a premium
+function marketPrice(k){k=repKey(k);let m=(S.mkt&&S.mkt[k])||1;if(CROPS[k]&&CROPS[k].season!==S.season)m*=1.25;return Math.max(5,Math.round(ITEMS[k].sell*m/5)*5);}
+// how willing a customer is, by asking price / market price
+function sellChance(r){if(r<=1)return clamp(1.4-.8*(r-.5),1,1.4);return Math.pow(Math.max(0,1-(r-1)*3.2),1.5);}
+function easeInfo(r){
+  if(r<=.9)return['◎ すぐ売れる','#2f8a3a'];if(r<=1.05)return['○ 売れやすい','#3f7fbf'];
+  if(r<=1.15)return['△ やや高い','#c98a1b'];if(r<=1.3)return['▽ 売れにくい','#d8662c'];return['× 高すぎる','#c9453a'];}
+function updateMarket(){for(const k in ITEMS){let m=S.mkt[k]||1;m+=(Math.random()-.5)*.2+(1-m)*.25;S.mkt[k]=clamp(m,.7,1.4);}}
+const iconCache={};
+function itemIcon(k){if(!iconCache[k]){const [c]=mk(64,64);iconCanvas(c,k);iconCache[k]=c;}return iconCache[k];}
+function spriteStand(se){
+  const W=100,H=110;const [c,g]=mk(W,H);
+  ell(g,50,H-6,44,8,'rgba(0,0,0,.25)');
+  g.fillStyle='#7a4a26';g.fillRect(12,26,7,H-32);g.fillRect(W-19,26,7,H-32);
+  g.fillStyle='#a8703c';g.fillRect(8,H-50,W-16,42);
+  for(let x=8;x<W-8;x+=14)line(g,x,H-46,x,H-8,'rgba(70,40,15,.3)',1.5);
+  g.fillStyle='#d9a066';rr(g,4,H-56,W-8,10,4);g.fill();
+  for(let i=0;i<6;i++){g.fillStyle=i%2?'#fff5e6':'#4f9a3f';g.fillRect(i*W/6,14,W/6+1,18);
+    g.beginPath();g.arc(i*W/6+W/12,32,W/12,0,Math.PI);g.fill();}
+  g.fillStyle='rgba(255,255,255,.25)';g.fillRect(0,14,W,4);
+  if(se===3){g.fillStyle='#f7faff';rr(g,-2,9,W+4,9,4);g.fill();}
+  g.fillStyle='#fff3d0';rr(g,W/2-26,H-40,52,20,4);g.fill();g.strokeStyle='#8a5a32';g.lineWidth=2;g.stroke();
+  g.fillStyle='#8a3a2a';g.font='800 13px "M PLUS Rounded 1c",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('直売所',W/2,H-29.5);
+  return c;
+}
+const STAND_O={x:BUILD.bin.x*TS-18,y:BUILD.bin.y*TS-46};
+function drawStand(g){
+  g.drawImage(SPR.stand,STAND_O.x,STAND_O.y);
+  S.stand.slots.slice(0,3).forEach((s,i)=>g.drawImage(itemIcon(s.k),STAND_O.x+10+i*28,STAND_O.y+34,30,30));
+}
+function stockItem(k){
+  const n=S.bag[k]||0;if(!n)return;
+  let sl=S.stand.slots.find(s=>s.k===k);
+  if(!sl){if(S.stand.slots.length>=S.stand.max){toast('棚がいっぱい。何か下げてから並べよう');return;}sl={k,n:0,p:marketPrice(k)};S.stand.slots.push(sl);}
+  sl.n+=n;delete S.bag[k];sfx('pickup');
+}
+function unstock(i){const sl=S.stand.slots[i];if(!sl)return;S.bag[sl.k]=(S.bag[sl.k]||0)+sl.n;S.stand.slots.splice(i,1);sfx('tap');}
+function openStand(){
+  const sl=S.stand.slots;
+  let h=`<div class="sec">並べている商品 ${sl.length}/${S.stand.max}</div>`;
+  if(sl.length){h+=`<div class="list">`+sl.map((s,i)=>{const mp=marketPrice(s.k),[lab,col]=easeInfo(s.p/mp);
+    return `<div class="row srow"><canvas width="88" height="88" data-icon="${s.k}"></canvas><div class="info"><div class="nm">${ITEMS[s.k].name} × ${s.n}</div>
+      <div class="sub">市場価格 ${mp}G ・<b data-ease="${i}" style="color:${col}">${lab}</b></div></div>
+      <div class="pricebar"><button class="btn sm" data-dn="${i}" aria-label="値下げ">−</button><input id="price${i}" class="price" type="number" inputmode="numeric" min="1" value="${s.p}" data-price="${i}"><span class="g">G</span><button class="btn sm" data-up="${i}" aria-label="値上げ">＋</button>
+      <button class="btn sm auto" data-auto="${i}">自動</button><button class="btn sm" data-off="${i}">下げる</button></div></div>`;}).join('')+`</div>
+    <div class="btns" style="padding:10px 0 0"><button class="btn go" data-allauto="1">全部を市場価格にする</button></div>`;}
+  else h+=`<p style="margin:0">まだ何も並べていないよ。下のバッグから商品を並べよう。</p>`;
+  const bk=Object.keys(S.bag).filter(k=>S.bag[k]>0);
+  h+=`<div class="sec">バッグから並べる</div>`;
+  h+=bk.length?`<div class="list">`+bk.map(k=>`<div class="row"><canvas width="88" height="88" data-icon="${k}"></canvas><div class="info"><div class="nm">${ITEMS[k].name} × ${S.bag[k]}</div><div class="sub">今日の市場価格 ${marketPrice(k)}G</div></div><div class="buy"><button class="btn" data-stock="${k}">並べる</button></div></div>`).join('')+`</div>`
+    :`<p style="margin:0">バッグは空っぽ。</p>`;
+  h+=`<p class="note">お客さんは 8:00〜18:00 に来ます。市場価格くらいなら売れやすく、高くするほど売れにくくなり、1.3倍を超えるとほとんど売れません。売上はその場でもらえます。</p>`;
+  openModal('直売所',h,[{label:'とじる',fn:closeModal}]);
+  const re=()=>{const sc=$('#mBody').scrollTop;openStand();$('#mBody').scrollTop=sc;};
+  const step=i=>Math.max(5,Math.round(marketPrice(S.stand.slots[i].k)*.05/5)*5);
+  $('#mBody').onclick=e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+    if(d.stock){stockItem(d.stock);re();}
+    else if(d.off!==undefined){unstock(+d.off);re();}
+    else if(d.auto!==undefined){const s=S.stand.slots[+d.auto];s.p=marketPrice(s.k);sfx('tap');re();}
+    else if(d.allauto){S.stand.slots.forEach(s=>s.p=marketPrice(s.k));sfx('buy');toast('全部を市場価格にした');re();}
+    else if(d.up!==undefined){const s=S.stand.slots[+d.up];s.p+=step(+d.up);sfx('tap');re();}
+    else if(d.dn!==undefined){const s=S.stand.slots[+d.dn];s.p=Math.max(1,s.p-step(+d.dn));sfx('tap');re();}};
+  $('#mBody').oninput=e=>{const i=e.target.dataset.price;if(i===undefined)return;const s=S.stand.slots[+i];const v=parseInt(e.target.value,10);
+    if(!(v>0))return;s.p=Math.min(99999,v);const [lab,col]=easeInfo(s.p/marketPrice(s.k));const el=$(`[data-ease="${i}"]`);if(el){el.textContent=lab;el.style.color=col;}};
+}
+/* ---- customers ---- */
+const CUST_LOOKS=[
+  {skin:'#f6cfa6',hair:'#3a2a1a',style:'short',top:'#6fa8dc',bottom:'#4a4a5a'},
+  {skin:'#f3c9a0',hair:'#a0522d',style:'long',top:'#f2b84b',bottom:'#8a5a9a',skirt:true},
+  {skin:'#eec39a',hair:'#bbbbbb',style:'short',top:'#8a6a4a',bottom:'#4a3a2a',hat:'cap',hatCol:'#7a9a5a'},
+  {skin:'#f8d6b8',hair:'#1a1a1a',style:'long',top:'#e0574a',bottom:'#3f4f7f',skirt:true},
+  {skin:'#e8b88f',hair:'#5a3a1a',style:'short',top:'#5aac7a',bottom:'#5a5a6a'},
+];
+let customers=[],custTimer=15;
+function spawnCustomer(){
+  const home=Math.random()<.5?[3,6]:[30,6];const path=findPath(home[0],home[1],(x,y)=>x===7&&y===5);if(!path)return;
+  customers.push({look:CUST_LOOKS[Math.floor(Math.random()*CUST_LOOKS.length)],x:home[0]+.5,y:home[1]+.5,tx:home[0],ty:home[1],path,home,st:'in',t:0,dir:'down',walk:0,bubble:null,bt:0});
+}
+function stepWalker(c,dt,sp){
+  if(!c.path.length){c.moving=false;return true;}
+  const [nx,ny]=c.path[0];const gx=nx+.5,gy=ny+.5,dx=gx-c.x,dy=gy-c.y,d=Math.hypot(dx,dy),s=sp*dt;
+  if(Math.abs(dx)>Math.abs(dy))c.dir=dx>0?'right':'left';else if(Math.abs(dy)>.01)c.dir=dy>0?'down':'up';
+  if(d<=s){c.x=gx;c.y=gy;c.tx=nx;c.ty=ny;c.path.shift();c.walk+=d;}else{c.x+=dx/d*s;c.y+=dy/d*s;c.walk+=s;}
+  c.moving=true;return false;
+}
+function customerBuy(c){
+  const slots=S.stand.slots;if(!slots.length){c.bubble='あれ、売り切れ？';c.bt=1.6;return;}
+  const i=Math.floor(Math.random()*slots.length),sl=slots[i],r=sl.p/marketPrice(sl.k);
+  if(Math.random()<Math.min(.95,.62*sellChance(r))){
+    const q=r<.9&&sl.n>1&&Math.random()<.35?2:1,g=sl.p*q;sl.n-=q;if(sl.n<=0)slots.splice(i,1);
+    S.money+=g;S.stats.sold+=g;const rec=S.salesToday[sl.k]||(S.salesToday[sl.k]={n:0,g:0});rec.n+=q;rec.g+=g;
+    floatText(STAND_O.x+50,STAND_O.y+20,`+${g}G`,'#ffe27a');sparkle(STAND_O.x+50,STAND_O.y+40,'#ffe27a',8);sfx('coin');
+    toast(`直売所で${ITEMS[sl.k].name}${q>1?'×'+q:''}が売れた！ +${g}G`);c.bubble='♪';c.bt=1.6;
+  }else{c.bubble=r>1.15?'高いなぁ…':'うーん…';c.bt=1.6;}
+}
+function updateCustomers(dt){
+  const open=S.time>=480&&S.time<1080;
+  if(open&&S.stand.slots.length&&customers.length<3){custTimer-=dt*1.6667;
+    if(custTimer<=0){spawnCustomer();const rate=3*(S.weather==='sun'?1:.5)*((S.total%7)>=5?1.5:1);custTimer=60/rate*(.5+Math.random());}}
+  for(let i=customers.length-1;i>=0;i--){const c=customers[i];if(c.bt>0)c.bt-=dt;
+    if(c.st==='shop'){c.moving=false;c.t-=dt;if(c.t<=0){customerBuy(c);c.st='out';c.path=findPath(c.tx,c.ty,(x,y)=>x===c.home[0]&&y===c.home[1])||[];}continue;}
+    if(stepWalker(c,dt,2.4)){if(c.st==='in'){c.st='shop';c.t=1.3;c.dir='up';}else customers.splice(i,1);}
+  }
+}
+/* ================= villagers ================= */
+const NPCS={
+  gen:{name:'ゲンさん',look:{skin:'#eec39a',hair:'#e4e4e4',style:'bald',top:'#6a8f4a',bottom:'#5a4a3a',beard:true},
+    home:[3,6],spots:[[13,6],[7,9],[16,6],[20,6],[7,13]],likes:['radish','furofuki','hakusainabe','potato','jagabata'],
+    lines:['ワシは若いころ、この村いちばんの畑を持っとったんじゃ。','土はな、手をかけたぶんだけ応えてくれるもんじゃよ。','水やりを忘れると、作物は一日育たんからのう。','直売所の値段は、市場価格を目安にするんじゃぞ。'],
+    season:[['春はカブが育てやすい。まずはそこからじゃな。'],['夏はスイカじゃ！ 手間はかかるが高く売れるぞ。'],['秋はカボチャが一番の稼ぎ頭じゃ。'],['冬でもホウレンソウとハクサイは育つんじゃよ。']],
+    close:'あんたが来てから、この村もにぎやかになったのう。'},
+  mina:{name:'ミナ',look:{skin:'#f8d6b8',hair:'#8a4a2a',style:'long',top:'#e77ea3',bottom:'#e77ea3',skirt:true,apron:true,ribbon:'#fff'},
+    home:[30,6],spots:[[23,5],[10,6],[18,6],[25,6],[26,6]],likes:['strawberry','strawmilk','carrotcake','pumpkinpie','milkL','hotmilk'],
+    lines:['いつか村に小さなカフェを開くのが夢なの。','新鮮なミルクがあると、お菓子作りがはかどるんだ。','よろず屋のおばさん、実はお料理上手なんだよ。','直売所、いつも楽しみに見てるよ！'],
+    season:[['春はイチゴの季節！ いちごミルクが飲みたいな。'],['暑いね〜。冷たいスイカジュースが恋しいよ。'],['秋はカボチャのお菓子を作りたくなるの。'],['寒い日はホットミルクがいちばん！']],
+    close:'あなたと話してると、なんだか元気が出るな。'},
+  sora:{name:'ソラ',look:{skin:'#f3c9a0',hair:'#2a2a2a',style:'short',top:'#f2c94c',bottom:'#3f6fb5',hat:'cap',hatCol:'#3fa0d8'},
+    home:[30,6],spots:[[22,13],[24,14],[25,13],[20,6],[22,8]],likes:['yakizakana','koi','watermelon','suikajuice','yakitoumo','namazu'],
+    lines:['池にはすっごく大きいヌシがいるんだって！','浮きが沈んだら、すぐにタップするのがコツだよ。','ぼく、大きくなったら漁師になるんだ！','牛のハナコ、ぼくのこと覚えてるかな？'],
+    season:[['春の池はニジマスが釣れるよ！'],['夏はアユ！ 塩焼きがおいしいんだ。'],['秋もニジマスが戻ってくるよ。'],['冬は氷に穴をあけてワカサギ釣り！']],
+    close:'きみはぼくの一番の友だちだよ！'},
+};
+const QUESTS=[
+  {id:'g1',npc:'gen',title:'はじめての収穫',type:'deliver',need:{turnip:3},reward:{money:300,seeds:{potato:5}},
+    offer:['おう、新入りさん。畑の調子はどうじゃ？','ひとつ、カブを3つ見せてくれんか。育て方を見てやろう。'],done:['ほう、立派なカブじゃ！ 筋がええのう。','これはお礼じゃ。ジャガイモも育ててみるとええ。']},
+  {id:'g2',npc:'gen',after:'g1',title:'直売所デビュー',type:'stat',stat:'sold',n:1000,reward:{money:500,slots:2},
+    offer:['家の横の直売所、うまく使っとるか？','値段は市場価格を目安にするんじゃ。高すぎると誰も買わんぞ。','合計1,000G売れたら、ワシが棚を作り足してやろう。'],done:['1,000Gも売れたか！ 約束どおり棚を2つ増やしておいたぞ。']},
+  {id:'g3',npc:'gen',after:'g2',title:'畑名人への道',type:'stat',stat:'harvested',n:40,reward:{money:1500},
+    offer:['畑名人になるには、とにかく数をこなすことじゃ。','作物を40回収穫してみい。'],done:['40回も収穫したか。もう立派な畑名人じゃな！']},
+  {id:'g4',npc:'gen',after:'g3',title:'ゲンさんの好物',type:'deliver',need:{furofuki:1},reward:{money:2000},
+    offer:['実はな、ワシはふろふき大根に目がないんじゃ。','秋のダイコンで作ってくれんかのう。'],done:['おお、これじゃこれじゃ！ ばあさんの味を思い出すわい…。ありがとうよ。']},
+  {id:'m1',npc:'mina',title:'しぼりたてミルク',type:'deliver',need:{milk:1},reward:{money:400},
+    offer:['ねえねえ、牛を飼ってるんでしょ？','しぼりたてのミルクを1本わけてくれないかな。お菓子の試作をしたいの！'],done:['わあ、新鮮！ ありがとう！']},
+  {id:'m2',npc:'mina',after:'m1',title:'お料理修行',type:'stat',stat:'cooked',n:3,reward:{money:600},
+    offer:['おうちのキッチンでお料理してる？','3品作ったら、どうだったか教えてね！'],done:['3品も作ったんだ！ 今度レシピ交換しようね。']},
+  {id:'m3',npc:'mina',after:'m2',title:'ケーキの試食会',type:'deliver',need:{carrotcake:1},reward:{money:1200},
+    offer:['カフェのメニューを考えてるの。','にんじんケーキを作ってきてくれないかな？ 試食会をしたいんだ。'],done:['ふわふわ！ これならお店に出せるよ。ありがとう！']},
+  {id:'m4',npc:'mina',after:'m3',title:'秋の特製パイ',type:'deliver',need:{pumpkinpie:1},reward:{money:3000},
+    offer:['カフェの看板メニューにしたいのが、かぼちゃパイなの。','あなたの畑のカボチャで作ったパイ、食べてみたいな。'],done:['……おいしい！ これが看板メニューに決まり！ 本当にありがとう。']},
+  {id:'s1',npc:'sora',title:'つりの約束',type:'stat',stat:'fish',n:3,reward:{money:300},
+    offer:['ねえ、釣りってしたことある？','池で魚を3匹釣ってみてよ！ 約束だよ！'],done:['3匹も！ やるじゃん！ ぼくのおこづかい、あげる！']},
+  {id:'s2',npc:'sora',after:'s1',title:'でっかいコイ',type:'deliver',need:{koi:1},reward:{money:800},
+    offer:['池に赤いコイがいるの、見たことある？','めったに釣れないんだって。釣れたら見せて！'],done:['すっげー！ 本物のコイだ！ みんなに自慢しよっと！']},
+  {id:'s3',npc:'sora',after:'s2',title:'たまご観察',type:'deliver',need:{eggL:1},reward:{money:500},
+    offer:['学校の自由研究で、たまごを観察したいんだ。','いちばん大きいLたまごがいいな！ ニワトリをなでると産まれるんでしょ？'],done:['大きい！ これで自由研究はばっちりだ！']},
+  {id:'s4',npc:'sora',after:'s3',title:'夜の池のヌシ',type:'deliver',need:{namazu:1},reward:{money:1500},
+    offer:['池のヌシの正体、わかったんだ。夜にしか出てこないナマズだよ！','夜に釣りをして、ぼくに見せて！'],done:['これがヌシ…！ ひげがすごい！ きみは村いちばんの釣り名人だ！']},
+];
+const QMAP=Object.fromEntries(QUESTS.map(q=>[q.id,q]));
+const NPC_RT={};
+function updateVillagers(dt){
+  const out=S.time>=540&&S.time<1050;
+  for(const k in NPCS){let n=NPC_RT[k];const [hx,hy]=NPCS[k].home;
+    if(!n){if(!out)continue;n=NPC_RT[k]={x:hx+.5,y:hy+.5,tx:hx,ty:hy,path:[],dir:'down',walk:0,wait:1+Math.random()*3,leaving:false,freeze:0,moving:false};}
+    if(n.freeze>0){n.freeze-=dt;n.moving=false;continue;}
+    if(!out&&!n.leaving){n.leaving=true;n.path=findPath(n.tx,n.ty,(x,y)=>x===hx&&y===hy)||[];}
+    if(n.path.length){if(stepWalker(n,dt,2)&&n.leaving)delete NPC_RT[k];continue;}
+    if(n.leaving){delete NPC_RT[k];continue;}
+    n.moving=false;n.wait-=dt;
+    if(n.wait<=0){const sp=NPCS[k].spots;const [sx,sy]=sp[Math.floor(Math.random()*sp.length)];n.path=findPath(n.tx,n.ty,(x,y)=>x===sx&&y===sy)||[];n.wait=4+Math.random()*6;}
+  }
+}
+function drawVillager(g,L,x,y,dir,walk,moving,t){
+  const ph=walk*Math.PI,bob=moving?Math.abs(Math.sin(ph))*2.5:Math.sin(t*2+x*.1)*.6,sw=moving?Math.sin(ph):0;
+  const side=dir==='left'?-1:dir==='right'?1:0;const shoe='#5a3a22';
+  ell(g,x,y,15,5.5,'rgba(0,0,0,.25)');
+  if(!side){[[-1,Math.max(0,sw)],[1,Math.max(0,-sw)]].forEach(([s,l])=>{g.fillStyle=L.skirt?L.skin:L.bottom;rr(g,x+s*5-3.5,y-18,7,14-l*3,3);g.fill();g.fillStyle=shoe;rr(g,x+s*5-4.5,y-7-l*3,9,7,3);g.fill();});}
+  else{[sw,-sw].forEach(o=>{g.fillStyle=L.skirt?L.skin:L.bottom;rr(g,x-3.5+o*5,y-18,7,14,3);g.fill();g.fillStyle=shoe;rr(g,x-4+o*5+side*1.5,y-7,9,7,3);g.fill();});}
+  const armY=y-33-bob;
+  if(!side)[[-1,sw],[1,-sw]].forEach(([s,o])=>{circ(g,x+s*13,armY+o*2,5,L.top);circ(g,x+s*14,armY+8+o*2,4,L.skin);});
+  g.fillStyle=L.top;rr(g,x-12,y-43-bob,24,26,9);g.fill();
+  if(L.skirt){g.fillStyle=L.bottom;g.beginPath();g.moveTo(x-12,y-26-bob);g.lineTo(x+12,y-26-bob);g.lineTo(x+16,y-14);g.lineTo(x-16,y-14);g.closePath();g.fill();}
+  else{g.fillStyle=L.bottom;rr(g,x-12,y-28-bob,24,11,5);g.fill();}
+  if(L.apron&&dir!=='up'){g.fillStyle='#fffaf2';rr(g,x-8+side*2,y-38-bob,16,22,4);g.fill();}
+  if(side){const o=sw*3;circ(g,x+side*2+o,armY+1,5,L.top);circ(g,x+side*4+o,armY+9,4,L.skin);}
+  const hy=y-55-bob;
+  if(L.style==='long'&&dir!=='up'){g.fillStyle=L.hair;rr(g,x-15,hy-6,30,30,12);g.fill();}
+  circ(g,x,hy,14,L.skin);g.fillStyle=L.hair;
+  if(L.style==='bald'){if(dir==='up'){g.beginPath();g.arc(x,hy+2,14.5,.1,Math.PI-.1);g.fill();}else{ell(g,x-12,hy+1,4,7,L.hair);ell(g,x+12,hy+1,4,7,L.hair);}}
+  else if(dir==='up'){g.beginPath();g.arc(x,hy,14.5,0,Math.PI*2);g.fill();if(L.style==='long'){rr(g,x-14,hy,28,24,10);g.fill();}}
+  else if(side){g.beginPath();g.arc(x-side*3,hy-2,13.5,Math.PI*.9,Math.PI*2.1);g.fill();ell(g,x-side*9,hy+2,6,9,L.hair);}
+  else{g.beginPath();g.arc(x,hy-2,14,Math.PI*1.02,Math.PI*1.98);g.fill();ell(g,x-11,hy+1,4,7,L.hair);ell(g,x+11,hy+1,4,7,L.hair);}
+  const closed=((t+x*.013)%4.1)<.12;
+  if(dir==='down'){if(closed){line(g,x-7,hy+2,x-4,hy+2,'#3a2414',1.8);line(g,x+4,hy+2,x+7,hy+2,'#3a2414',1.8);}
+    else{ell(g,x-5,hy+2,2,3,'#3a2414');ell(g,x+5,hy+2,2,3,'#3a2414');circ(g,x-4.4,hy+1,.8,'#fff');circ(g,x+5.6,hy+1,.8,'#fff');}
+    ell(g,x-8.5,hy+7,2.8,1.7,'rgba(240,120,120,.45)');ell(g,x+8.5,hy+7,2.8,1.7,'rgba(240,120,120,.45)');
+    if(L.beard){ell(g,x,hy+10,9,6,L.hair);ell(g,x,hy+6,6,2,L.hair);}
+    else{g.beginPath();g.arc(x,hy+7,2.4,.2,Math.PI-.2);g.strokeStyle='#8a3a2a';g.lineWidth=1.3;g.stroke();}}
+  else if(side){if(closed)line(g,x+side*4.5,hy+2,x+side*7.5,hy+2,'#3a2414',1.8);else ell(g,x+side*6.5,hy+2,1.9,3,'#3a2414');
+    if(L.beard)ell(g,x+side*5,hy+10,6,5,L.hair);}
+  if(L.hat==='cap'){g.fillStyle=L.hatCol;g.beginPath();g.ellipse(x,hy-6,14.5,10,0,Math.PI,0);g.fill();
+    if(dir!=='up')ell(g,x+side*8,hy-6,side?10:13,3.5,L.hatCol);}
+  if(L.ribbon){const rx=x+(dir==='left'?6:-8),ry=hy-12;ell(g,rx-4,ry,4.5,3,L.ribbon,-.4);ell(g,rx+4,ry,4.5,3,L.ribbon,.4);circ(g,rx,ry,2,'#e0574a');}
+}
+function drawBubble(g,x,y,text,col){
+  g.font='800 12px "M PLUS Rounded 1c",sans-serif';const w=Math.max(22,g.measureText(text).width+14);
+  g.fillStyle='#fff';rr(g,x-w/2,y-18,w,20,8);g.fill();g.beginPath();g.moveTo(x-4,y+1);g.lineTo(x+4,y+1);g.lineTo(x,y+6);g.fill();
+  g.fillStyle=col||'#4a2f1a';g.textAlign='center';g.textBaseline='middle';g.fillText(text,x,y-8);
+}
+function npcMark(k){
+  const q=activeQuest(k);if(q&&questReady(q))return['★','#e0a21a'];
+  if(S.daily&&!S.daily.done&&S.daily.npc===k)return['?','#3f8fc7'];
+  if(!q&&nextQuest(k))return['!','#e0403a'];
+  return null;
+}
+function portrait(cnv,k){const g=cnv.getContext('2d');g.clearRect(0,0,cnv.width,cnv.height);g.save();g.scale(cnv.width/96,cnv.width/96);
+  g.fillStyle='#f4e3bc';g.fillRect(0,0,96,96);g.translate(48,60);g.scale(1.8,1.8);drawVillager(g,NPCS[k].look,0,55,'down',0,false,0.5);g.restore();}
+/* ---- quests ---- */
+const activeQuest=k=>{for(const id in S.quests)if(QMAP[id]&&QMAP[id].npc===k)return QMAP[id];return null;};
+const nextQuest=k=>QUESTS.find(q=>q.npc===k&&!S.qdone.includes(q.id)&&!S.quests[q.id]&&(!q.after||S.qdone.includes(q.after)));
+const needText=need=>Object.entries(need).map(([k,n])=>`${itemName(k)}×${n}`).join('、');
+function questProgress(q){
+  if(q.type==='stat'){const v=Math.max(0,S.stats[q.stat]-S.quests[q.id].start);return[Math.min(v,q.n),q.n];}
+  const e=Object.entries(q.need);return[e.reduce((a,[k,n])=>a+Math.min(n,haveCount(k)),0),e.reduce((a,[,n])=>a+n,0)];
+}
+function questReady(q){const [a,b]=questProgress(q);return a>=b;}
+function questHint(q){return q.type==='stat'?({sold:'直売所で合計{n}G売り上げる',harvested:'作物を{n}回収穫する',fish:'魚を{n}匹釣る',cooked:'料理を{n}品作る'})[q.stat].replace('{n}',q.n.toLocaleString()):`${needText(q.need)}をとどける`;}
+function rewardText(r){const a=[];if(r.money)a.push(`${r.money.toLocaleString()}G`);if(r.seeds)for(const k in r.seeds)a.push(`${CROPS[k].name}のタネ×${r.seeds[k]}`);if(r.slots)a.push(`直売所の棚+${r.slots}`);return a.join('、');}
+function addLove(k,n){const s=S.npc[k];s.love=Math.min(100,s.love+n);}
+const heartsOf=k=>Math.floor(S.npc[k].love/10);
+function acceptQuest(q){S.quests[q.id]={start:q.type==='stat'?S.stats[q.stat]:0};sfx('buy');toast(`おねがい「${q.title}」を引き受けた`);}
+function completeQuest(q){
+  if(!questReady(q))return;
+  if(q.type==='deliver')for(const [k,n] of Object.entries(q.need))consume(k,n);
+  const r=q.reward;if(r.money)S.money+=r.money;if(r.seeds)for(const k in r.seeds)S.seeds[k]=(S.seeds[k]||0)+r.seeds[k];if(r.slots)S.stand.max+=r.slots;
+  delete S.quests[q.id];S.qdone.push(q.id);addLove(q.npc,10);sfx('harvest');
+  say(q.npc,[...q.done,`（ごほうび: ${rewardText(r)}）`]);
+}
+function newDaily(){
+  const ks=Object.keys(NPCS),npc=ks[Math.floor(Math.random()*ks.length)];
+  const pool=[...Object.keys(CROPS).filter(k=>CROPS[k].season===S.season),'egg','milk','fish'];
+  const k=pool[Math.floor(Math.random()*pool.length)],n=GROUP[k]?1+Math.floor(Math.random()*2):2+Math.floor(Math.random()*3);
+  S.daily={npc,k,n,reward:Math.round(marketPrice(k)*n*1.6/10)*10+50,done:false};
+}
+function completeDaily(){const d=S.daily;if(!d||d.done||haveCount(d.k)<d.n)return;consume(d.k,d.n);S.money+=d.reward;d.done=true;addLove(d.npc,6);sfx('harvest');
+  say(d.npc,['ありがとう！ 本当に助かったよ。',`（お礼: ${d.reward.toLocaleString()}G）`]);}
+function greet(k){
+  const d=NPCS[k],h=heartsOf(k);const pool=[...d.lines,...d.season[S.season]];
+  if(S.weather!=='sun')pool.push(S.weather==='snow'?'雪がきれいだね。':'今日は雨だね。畑の水やりはお休みかな？');
+  if(h>=5)pool.push(d.close);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function talkTo(k){
+  const s=S.npc[k];if(!s.talked){s.talked=true;addLove(k,2);}
+  const lines=[greet(k)],choices=[];
+  const q=activeQuest(k);
+  if(q){if(questReady(q))choices.push({label:q.type==='deliver'?`${needText(q.need)}をわたす`:`「${q.title}」を報告する`,cls:'go',fn:()=>completeQuest(q)});
+    else{const [a,b]=questProgress(q);lines.push(`「${q.title}」の件、よろしくね。（${questHint(q)} ${a.toLocaleString()}/${b.toLocaleString()}）`);}}
+  else{const nq=nextQuest(k);if(nq)choices.push({label:`話を聞く「${nq.title}」`,cls:'go',fn:()=>say(k,nq.offer,[{label:'引き受ける',cls:'go',fn:()=>{acceptQuest(nq);say(k,['ありがとう！ よろしくね。'])}},{label:'また今度',fn:null}])});}
+  const dr=S.daily;
+  if(dr&&!dr.done&&dr.npc===k){if(haveCount(dr.k)>=dr.n)choices.push({label:`${itemName(dr.k)}×${dr.n}をわたす`,cls:'go',fn:completeDaily});
+    else lines.push(`そうそう、${itemName(dr.k)}を${dr.n}つ探してるんだ。今日中に持ってきてくれたら${dr.reward.toLocaleString()}Gお礼するよ。`);}
+  if(!s.gifted)choices.push({label:'プレゼントする',fn:()=>openGift(k)});
+  choices.push({label:'またね',fn:null});
+  say(k,lines,choices);
+}
+function openGift(k){
+  const ks=Object.keys(S.bag).filter(x=>S.bag[x]>0);
+  if(!ks.length){say(k,['（あげられるものを持っていない…）']);return;}
+  const h=`<div class="list">`+ks.map(x=>`<div class="row"><canvas width="88" height="88" data-icon="${x}"></canvas><div class="info"><div class="nm">${ITEMS[x].name} × ${S.bag[x]}</div></div><div class="buy"><button class="btn" data-gift="${x}">あげる</button></div></div>`).join('')+`</div>`;
+  openModal(`${NPCS[k].name}へのプレゼント`,h,[{label:'やめる',fn:closeModal}]);
+  $('#mBody').onclick=e=>{const b=e.target.closest('[data-gift]');if(!b)return;const x=b.dataset.gift;S.bag[x]--;if(!S.bag[x])delete S.bag[x];
+    S.npc[k].gifted=true;const liked=NPCS[k].likes.includes(x);addLove(k,liked?8:DISHES[x]?5:3);closeModal();
+    const n=NPC_RT[k];if(liked&&n)for(let i=0;i<6;i++)PT.push({x:n.x*TS,y:n.y*TS-50,vx:(Math.random()-.5)*30,vy:-40-Math.random()*20,g:0,life:0,max:1,type:'heart',size:1.2,col:'#ff6b8a'});
+    say(k,[liked?`わあ、${ITEMS[x].name}！ だいすきなんだ。本当にありがとう！`:`${ITEMS[x].name}？ ありがとう、大事にするね。`]);};
+}
+function openQuestLog(){
+  const act=Object.keys(S.quests).map(id=>QMAP[id]).filter(Boolean);
+  let h=`<div class="sec">受けているおねがい</div>`;
+  h+=act.length?`<div class="list">`+act.map(q=>{const [a,b]=questProgress(q);return `<div class="row"><canvas width="88" height="88" data-portrait="${q.npc}"></canvas><div class="info"><div class="nm">${q.title}</div>
+    <div class="sub">${NPCS[q.npc].name} ・${questHint(q)}<br><b style="color:${a>=b?'#2f8a3a':'#7a5a3a'}">${a>=b?'達成！ 報告しに行こう':`${a.toLocaleString()} / ${b.toLocaleString()}`}</b> ・ごほうび ${rewardText(q.reward)}</div></div></div>`;}).join('')+`</div>`
+    :`<p style="margin:0">いまは何も受けていないよ。頭に「!」が出ている村人に話しかけてみよう。</p>`;
+  const d=S.daily;
+  h+=`<div class="sec">今日のおねがい</div>`;
+  h+=d?`<div class="row"><canvas width="88" height="88" data-portrait="${d.npc}"></canvas><div class="info"><div class="nm">${NPCS[d.npc].name}「${itemName(d.k)}が${d.n}つほしい」</div><div class="sub">${d.done?'<b style="color:#2f8a3a">わたし済み</b>':`お礼 ${d.reward.toLocaleString()}G ・今日中 ・持っている ${haveCount(d.k)}`}</div></div></div>`:'<p style="margin:0">なし</p>';
+  h+=`<div class="sec">村人となかよし度</div><div class="list">`+Object.keys(NPCS).map(k=>`<div class="kv"><span>${NPCS[k].name}</span><span style="color:#e0577a;letter-spacing:.05em">${'♥'.repeat(heartsOf(k))}<span style="color:#d9c7a0">${'♥'.repeat(10-heartsOf(k))}</span></span></div>`).join('')+`</div>`;
+  h+=`<p class="note">村人は 9:00〜17:30 ごろ牧場に遊びに来ます。毎日話しかけたり、好きなものをプレゼントするとなかよくなれます。達成したおねがい ${S.qdone.length}/${QUESTS.length}</p>`;
+  openModal('おねがい帳',h,[{label:'とじる',fn:closeModal}]);
+  $('#mBody').querySelectorAll('canvas[data-portrait]').forEach(c=>portrait(c,c.dataset.portrait));
+}
+/* ---- dialogue box ---- */
+let talkState=null;
+function say(k,lines,choices){
+  paused=true;queue=[];cur=null;
+  const npc=k&&NPCS[k];$('#tName').innerHTML=npc?`${npc.name} <span class="hearts">${'♥'.repeat(heartsOf(k))}</span>`:'';
+  $('#tPortrait').hidden=!npc;if(npc)portrait($('#tPortrait'),k);
+  talkState={lines,choices:choices||[],i:0,typing:null};$('#talk').hidden=false;showLine();
+}
+function showLine(){
+  const s=talkState,txt=s.lines[s.i];$('#tChoices').innerHTML='';$('#tNext').hidden=true;
+  let n=0;clearInterval(s.typing);$('#tText').textContent='';
+  s.typing=setInterval(()=>{n++;$('#tText').textContent=txt.slice(0,n);if(n%3===1)sfx('blip');if(n>=txt.length){clearInterval(s.typing);s.typing=null;afterLine();}},26);
+}
+function afterLine(){
+  const s=talkState;if(!s)return;
+  if(s.i===s.lines.length-1&&s.choices.length){const box=$('#tChoices');box.innerHTML='';
+    s.choices.forEach(c=>{const b=document.createElement('button');b.className='btn '+(c.cls||'');b.textContent=c.label;b.onclick=ev=>{ev.stopPropagation();sfx('tap');endTalk();if(c.fn)c.fn();};box.appendChild(b);});}
+  else $('#tNext').hidden=false;
+}
+function endTalk(){const s=talkState;if(s)clearInterval(s.typing);talkState=null;$('#talk').hidden=true;if(!onTitle&&$('#modal').hidden)paused=false;}
+$('#talk').addEventListener('click',e=>{
+  if(e.target.closest('button'))return;const s=talkState;if(!s)return;
+  if(s.typing){clearInterval(s.typing);s.typing=null;$('#tText').textContent=s.lines[s.i];afterLine();return;}
+  if(s.i<s.lines.length-1){s.i++;showLine();}else if(!s.choices.length)endTalk();
+});
+function ensureVillage(s){
+  s.stand=s.stand||{slots:[],max:STAND_SLOTS};s.mkt=s.mkt||{};s.salesToday=s.salesToday||{};
+  s.stats=Object.assign({sold:0,harvested:0,fish:0,cooked:0,milked:0},s.stats||{});
+  s.npc=s.npc||{};for(const k in NPCS)s.npc[k]=Object.assign({love:0,talked:false,gifted:false},s.npc[k]||{});
+  s.quests=s.quests||{};s.qdone=s.qdone||[];
+  return s;
+}
 /* ================= UI ================= */
 function toast(msg){const box=$('#toasts');if(box.lastChild&&box.lastChild.textContent===msg&&box.lastChild._t>performance.now()-1500)return;
   const d=document.createElement('div');d.className='toast';d.textContent=msg;d._t=performance.now();box.appendChild(d);while(box.children.length>3)box.firstChild.remove();setTimeout(()=>d.remove(),3100);}
 let modalLock=false;
 function openModal(title,html,btns,lock){
-  $('#mTitle').textContent=title;$('#mBody').onclick=null;$('#mBody').innerHTML=html;const b=$('#mBtns');b.innerHTML='';
+  $('#mTitle').textContent=title;$('#mBody').onclick=null;$('#mBody').oninput=null;$('#mBody').innerHTML=html;const b=$('#mBtns');b.innerHTML='';
   (btns||[]).forEach(o=>{const e=document.createElement('button');e.className='btn '+(o.cls||'');e.textContent=o.label;e.onclick=()=>{sfx('tap');o.fn();};b.appendChild(e);});
   $('#mBody').querySelectorAll('canvas[data-icon]').forEach(c=>iconCanvas(c,c.dataset.icon));
   $('#modal').hidden=false;paused=true;modalLock=!!lock;queue=[];cur=null;
@@ -1554,7 +1893,7 @@ function openShop(){
   h+=S.cows.length<COW_MAX?row('cow','牛',`毎日ミルクがしぼれる ・いま ${S.cows.length}/${COW_MAX}頭`,bt('cow',COW_PRICE,`${COW_PRICE.toLocaleString()}G`)):row('cow','牛',`牛舎がいっぱい (${COW_MAX}/${COW_MAX})`,'');
   if(S.can.lvl<CAN_LV.length-1){const p=CAN_PRICE[S.can.lvl];h+=row('water','じょうろ強化',`容量 ${CAN_LV[S.can.lvl]} → ${CAN_LV[S.can.lvl+1]}`,bt('can',p,`${p.toLocaleString()}G`));}
   h+=row('onigiri','おにぎり','その場で食べて体力 +30',bt('onigiri',80,'80G'));
-  h+=`</div><p class="note">手持ち ${S.money.toLocaleString()}G ・作物は出荷箱に入れると売れるよ</p>`;
+  h+=`</div><p class="note">手持ち ${S.money.toLocaleString()}G ・作物や料理は家の横の直売所で売れるよ</p>`;
   openModal('よろず屋',h,[{label:'とじる',fn:closeModal}]);
   $('#mBody').onclick=e=>{const b=e.target.closest('[data-act]');if(!b)return;const [a,k,n]=b.dataset.act.split(':');
     if(a==='seed'){const cost=CROPS[k].price*+n;if(S.money<cost)return;S.money-=cost;S.seeds[k]=(S.seeds[k]||0)+ +n;S.seedSel=k;toast(`${CROPS[k].name}のタネを${n}つ買った`);}
@@ -1577,8 +1916,8 @@ function openBag(){
     :`<p style="margin:0">バッグは空っぽ。実った作物や、ニワトリのたまごを拾ってみよう。</p>`;
   const sd=Object.keys(CROPS).filter(k=>S.seeds[k]>0);
   if(sd.length)h+=`<div class="sec">タネ</div><div class="list">`+sd.map(k=>`<div class="kv"><span>${CROPS[k].name}のタネ</span><span>× ${S.seeds[k]}</span></div>`).join('')+`</div>`;
-  if(S.binTotal)h+=`<p class="note">出荷箱の中身: 明日の朝 ${S.binTotal.toLocaleString()}G</p>`;
-  h+=`<p class="note">家の横の出荷箱をタップすると、バッグの中身(料理もふくむ)をまとめて出荷できるよ。料理は家のキッチンで作れる。</p>`;
+  if(S.stand.slots.length)h+=`<p class="note">直売所に並べている商品: ${S.stand.slots.map(s=>`${ITEMS[s.k].name}×${s.n}`).join("、")}</p>`;
+  h+=`<p class="note">家の横の直売所をタップすると、値段をつけて商品を並べられるよ。料理は家のキッチンで作れる。</p>`;
   openModal('バッグ',h,[{label:'とじる',fn:closeModal}]);
   $('#mBody').onclick=e=>{const b=e.target.closest('[data-eat]');if(!b)return;eatDish(b.dataset.eat);const sc=$('#mBody').scrollTop;openBag();$('#mBody').scrollTop=sc;};
 }
@@ -1588,7 +1927,8 @@ function openHelp(first){
     <li>画面を<b>スワイプ</b>すると景色を動かせる。右上の帽子ボタンでキャラクターの場所に戻れるよ。</li>
     <li>畑を<b>長押ししてからなぞる</b>と、まとめて作業できる。</li>
     <li><b>クワ</b>で耕す → <b>タネ</b>をまく → 毎日<b>じょうろ</b>で水やり。水は池でくめる。</li>
-    <li>実った作物は<b>タップで収穫</b>。家の横の<b>出荷箱</b>に入れると翌朝お金に。</li>
+    <li>実った作物は<b>タップで収穫</b>。家の横の<b>直売所</b>で値段をつけて並べると、お客さんが買いに来るよ。「自動」で市場価格にできる。</li>
+    <li>牧場には<b>村人</b>が遊びに来る。話しかけると<b>おねがい</b>を頼まれることも。右上の本のボタンでおねがい帳を見られるよ。</li>
     <li>ニワトリを<b>なでる</b>と、次の朝に大きなたまごを産むよ。</li>
     <li>牧場の右の牛舎には牛がいるよ。<b>ミルカー</b>を持って牛をタップすると<b>乳しぼり</b>(1日1回)。毎日なでるとミルクが大きくなる。</li>
     <li><b>手ぶら</b>を選ぶと、道具を使わずに移動だけできる。</li>
@@ -1601,6 +1941,7 @@ function openHelp(first){
 let bagPulseT=0;function bagPulse(){bagPulseT=.3;}
 const toolBtns=[...document.querySelectorAll('.tool')];
 toolBtns.forEach(b=>b.addEventListener('click',()=>{initAudio();const tl=b.dataset.tool;if(tl==='seed'&&S.tool==='seed')openSeedPicker();else{S.tool=tl;sfx('tap');}refreshIcons();}));
+$('#questBtn').onclick=()=>{initAudio();sfx('tap');openQuestLog();};
 $('#centerBtn').onclick=()=>{initAudio();sfx('tap');centerOnPlayer(false);};
 $('#bagBtn').onclick=()=>{initAudio();sfx('tap');openBag();};
 $('#helpBtn').onclick=()=>{initAudio();sfx('tap');openHelp(false);};
@@ -1611,7 +1952,7 @@ const WICON={
   snow:`<svg id="wIcon" viewBox="0 0 24 24"><g stroke="#6f9fd0" stroke-width="2" stroke-linecap="round"><line x1="12" y1="3" x2="12" y2="21"/><line x1="4.2" y1="7.5" x2="19.8" y2="16.5"/><line x1="4.2" y1="16.5" x2="19.8" y2="7.5"/></g><circle cx="12" cy="12" r="2.5" fill="#fff" stroke="#6f9fd0" stroke-width="1.5"/></svg>`};
 const hudCache={};
 function setIf(key,val,fn){if(hudCache[key]!==val){hudCache[key]=val;fn(val);}}
-function refreshIcons(){toolBtns.forEach(b=>{b.classList.toggle('on',b.dataset.tool===S.tool);iconCanvas(b.querySelector('canvas'),b.dataset.tool);});iconCanvas($('#bagBtn canvas'),'bag');iconCanvas($('#centerBtn canvas'),'center');hudCache.seed=null;}
+function refreshIcons(){toolBtns.forEach(b=>{b.classList.toggle('on',b.dataset.tool===S.tool);iconCanvas(b.querySelector('canvas'),b.dataset.tool);});iconCanvas($('#bagBtn canvas'),'bag');iconCanvas($('#centerBtn canvas'),'center');iconCanvas($('#questBtn canvas'),'quest');hudCache.seed=null;}
 function updateHUD(){
   setIf('season',S.season,v=>{const p=$('#seasonPill');p.textContent=SEASONS[v];p.style.background=SEASON_COL[v];});
   setIf('date',`${S.year>1?S.year+'年目 ':''}${S.day}日 (${WEEK[S.total%7]})`,v=>$('#dateTxt').textContent=v);
@@ -1626,6 +1967,7 @@ function updateHUD(){
   const bagN=Object.values(S.bag).reduce((a,b)=>a+b,0);
   setIf('bag',bagN,v=>{const b=$('#bagBadge');b.hidden=!v;b.textContent=v;});
   setIf('music',musicOn,v=>$('#musicBtn').classList.toggle('off',!v));
+  setIf('qready',Object.keys(S.quests).some(id=>QMAP[id]&&questReady(QMAP[id]))||!!(S.daily&&!S.daily.done&&haveCount(S.daily.k)>=S.daily.n),v=>$('#questBadge').hidden=!v);
   if(bagPulseT>0){bagPulseT-=1/60;$('#bagBtn').style.transform=`scale(${1+Math.max(0,bagPulseT)*.6})`;}else if($('#bagBtn').style.transform)$('#bagBtn').style.transform='';
 }
 
@@ -1633,13 +1975,14 @@ function updateHUD(){
 function toWorld(e){return{x:camX+e.clientX*dpr/zoom,y:camY+e.clientY*dpr/zoom};}
 function pickTarget(w,quiet){
   const tx=Math.floor(w.x/TS),ty=Math.floor(w.y/TS);
+  for(const k in NPC_RT){const n=NPC_RT[k];if(Math.abs(w.x-n.x*TS)<24&&w.y>n.y*TS-58&&w.y<n.y*TS+22){n.freeze=8;return{type:'npc',key:k};}}
   for(const cw of S.cows)if(Math.abs(w.x-cw.x*TS)<38&&w.y>cw.y*TS-62&&w.y<cw.y*TS+8)return{type:'cow',ref:cw};
   for(const ch of S.chickens)if(Math.hypot(w.x-ch.x*TS,w.y-(ch.y*TS-14))<30)return{type:'chicken',ref:ch};
   for(const e of S.eggs)if(e.x===tx&&e.y===ty)return{type:'egg',ref:e,x:tx,y:ty};
   const inR=(x0,y0,x1,y1)=>w.x>=x0*TS&&w.x<x1*TS&&w.y>=y0*TS&&w.y<y1*TS;
   if(inR(3,.6,7,5))return{type:'house'};
   if(inR(22,.4,25,4))return{type:'shop'};
-  if(inR(7,3.7,8,5))return{type:'bin'};
+  if(inR(6.72,3.4,8.28,5))return{type:'bin'};
   if(inR(2,9.8,5,13))return{type:'coop'};
   if(inR(27,1.4,31,6))return{type:'barn'};
   if(!inB(tx,ty))return null;
@@ -1699,7 +2042,7 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 
 /* ================= boot ================= */
 function startGame(state,isNew){
-  S=state;onTitle=false;
+  S=state;onTitle=false;if(!S.daily)newDaily();customers=[];
   P.x=S.px+.5;P.y=S.py+.5;P.tx=S.px;P.ty=S.py;P.path=[];P.dir='down';
   if(SPR.se!==S.season)buildSprites(S.season);
   $('#title').hidden=true;$('#hud').hidden=false;$('#toolbar').hidden=false;
