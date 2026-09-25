@@ -52,12 +52,13 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 
 #toolbar{position:absolute;left:0;right:0;bottom:0;padding:0 6px calc(env(safe-area-inset-bottom,0px) + 10px);
   display:flex;justify-content:center;gap:4px;pointer-events:none}
-.tool{pointer-events:auto;position:relative;flex:1 1 0;min-width:0;max-width:62px;height:66px;border-radius:14px;border:3px solid var(--wood);letter-spacing:-.03em;white-space:nowrap;
+.tool{pointer-events:auto;position:relative;flex:1 1 0;min-width:0;max-width:62px;height:62px;border-radius:13px;border:3px solid var(--wood);letter-spacing:-.06em;overflow:visible;white-space:nowrap;
   background:linear-gradient(#fffaf0,#ecd6a8);box-shadow:0 4px 0 var(--wood-d),0 8px 14px rgba(0,0,0,.2);
   display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 0 4px;
-  font:800 10px "M PLUS Rounded 1c",sans-serif;transition:transform .15s cubic-bezier(.3,1.6,.5,1)}
-.tool canvas{width:36px;height:36px}
-@media (min-width:480px){.tool{font-size:11px;height:70px}.tool canvas{width:40px;height:40px}}
+  font:800 9px "M PLUS Rounded 1c",sans-serif;transition:transform .15s cubic-bezier(.3,1.6,.5,1)}
+.tool canvas{width:32px;height:32px}
+@media (min-width:420px){.tool{font-size:10px;height:66px}.tool canvas{width:36px;height:36px}}
+@media (min-width:560px){.tool{font-size:11px;height:70px;letter-spacing:0}.tool canvas{width:40px;height:40px}}
 .tool.on{background:linear-gradient(#fff8d2,#ffcf5e);border-color:#b77a16;transform:translateY(-7px);
   box-shadow:0 4px 0 #9a6410,0 12px 18px rgba(0,0,0,.28)}
 .badge{position:absolute;top:-7px;right:-7px;background:var(--berry);color:#fff;border:2px solid #fff;border-radius:11px;
@@ -130,6 +131,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
       <div id="moneyPanel" class="panel"><span class="coin"></span><span id="money">500</span><span style="font-size:13px">G</span></div>
       <div id="stPanel" class="panel">体力<div id="stBar"><div id="stFill"></div></div></div>
       <div id="iconBtns">
+        <button class="ibtn panel" id="centerBtn" aria-label="キャラクターの場所を表示"><canvas width="60" height="60"></canvas></button>
         <button class="ibtn panel" id="bagBtn" aria-label="バッグ"><canvas width="60" height="60"></canvas><span class="badge" id="bagBadge" hidden>0</span></button>
         <button class="ibtn panel" id="musicBtn" aria-label="音楽">♪</button>
         <button class="ibtn panel" id="helpBtn" aria-label="あそびかた">?</button>
@@ -144,6 +146,7 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
     <button class="tool" data-tool="sickle"><canvas width="80" height="80"></canvas>カマ</button>
     <button class="tool" data-tool="hammer"><canvas width="80" height="80"></canvas>ハンマー</button>
     <button class="tool" data-tool="milker"><canvas width="80" height="80"></canvas>ミルカー</button>
+    <button class="tool" data-tool="rod"><canvas width="80" height="80"></canvas>つりざお</button>
   </div>
   <div id="toasts"></div>
   <div id="title">
@@ -170,20 +173,59 @@ const CROPS={
   turnip:     {name:'カブ',       season:0,days:4, price:20, sell:60, regrow:0,col:'#f1ecff'},
   potato:     {name:'ジャガイモ', season:0,days:6, price:50, sell:140,regrow:0,col:'#c8995a'},
   strawberry: {name:'イチゴ',     season:0,days:7, price:90, sell:50, regrow:3,col:'#e2394a'},
+  carrot:     {name:'ニンジン',   season:0,days:5, price:40, sell:110,regrow:0,col:'#f08a2b'},
+  cabbage:    {name:'キャベツ',   season:0,days:8, price:100,sell:260,regrow:0,col:'#a8d878'},
   tomato:     {name:'トマト',     season:1,days:8, price:70, sell:60, regrow:3,col:'#e64b3c'},
+  pepper:     {name:'ピーマン',   season:1,days:6, price:50, sell:40, regrow:2,col:'#2f9a32'},
   corn:       {name:'トウモロコシ',season:1,days:10,price:120,sell:110,regrow:4,col:'#f3cf3f'},
+  watermelon: {name:'スイカ',     season:1,days:11,price:150,sell:420,regrow:0,col:'#2f7a2c'},
   sweetpotato:{name:'サツマイモ', season:2,days:5, price:45, sell:115,regrow:0,col:'#b8426f'},
+  radish:     {name:'ダイコン',   season:2,days:6, price:50, sell:140,regrow:0,col:'#f4f4ea'},
   eggplant:   {name:'ナス',       season:2,days:6, price:60, sell:45, regrow:3,col:'#6b3d8f'},
   pumpkin:    {name:'カボチャ',   season:2,days:9, price:110,sell:300,regrow:0,col:'#ee8a2b'},
+  spinach:    {name:'ホウレンソウ',season:3,days:5,price:60, sell:130,regrow:0,col:'#2f7f2a'},
+  hakusai:    {name:'ハクサイ',   season:3,days:8, price:90, sell:250,regrow:0,col:'#dff0c0'},
+};
+// se: seasons the fish bites in; night: only after 18:00
+const FISH={
+  medaka:  {name:'メダカ',  sell:20, w:5,se:[0,1,2],  col:'#c9b88a',belly:'#efe6c8',len:.6},
+  funa:    {name:'フナ',    sell:45, w:6,se:[0,1,2,3],col:'#8a7a4a',belly:'#d8cfa0',len:.85},
+  nijimasu:{name:'ニジマス',sell:95, w:3,se:[0,2],    col:'#7a8f7a',belly:'#f4b8c0',len:.95},
+  ayu:     {name:'アユ',    sell:110,w:3,se:[1],      col:'#8fa06a',belly:'#f2e9b0',len:.9},
+  wakasagi:{name:'ワカサギ',sell:70, w:6,se:[3],      col:'#a8b8c8',belly:'#eef3f8',len:.7},
+  koi:     {name:'コイ',    sell:160,w:1,se:[0,1,2],  col:'#e2663a',belly:'#fff1dc',len:1.1},
+  namazu:  {name:'ナマズ',  sell:210,w:2,se:[0,1,2],  col:'#4a4a3a',belly:'#bdb59a',len:1.15,night:true},
+};
+// need: ingredient keys; milk / egg / fish accept any size or kind
+const DISHES={
+  hotmilk:    {name:'ホットミルク',   need:{milk:1},                   st:30,sell:170,v:'cup',  c:['#fbf6ec','#f2e2c0']},
+  asazuke:    {name:'カブの浅漬け',   need:{turnip:2},                 st:25,sell:160,v:'plate',c:['#f3eef8','#8fd66a']},
+  jagabata:   {name:'じゃがバター',   need:{potato:1,milk:1},          st:50,sell:360,v:'plate',c:['#e8c27a','#ffe27a']},
+  yakiimo:    {name:'焼きいも',       need:{sweetpotato:1},            st:40,sell:220,v:'plate',c:['#9a2f5c','#f6c85a']},
+  omelet:     {name:'オムレツ',       need:{egg:1,milk:1},             st:45,sell:280,v:'plate',c:['#ffd24a','#e0402a']},
+  strawmilk:  {name:'いちごミルク',   need:{strawberry:2,milk:1},      st:50,sell:320,v:'cup',  c:['#ffc0d0','#e2394a']},
+  carrotcake: {name:'にんじんケーキ', need:{carrot:1,egg:1,milk:1},    st:60,sell:450,v:'cake', c:['#e8a25a','#fff6ea']},
+  rollcabbage:{name:'ロールキャベツ', need:{cabbage:1,egg:1},          st:55,sell:420,v:'bowl', c:['#c8e89a','#e0664a']},
+  natsusalad: {name:'夏野菜サラダ',   need:{tomato:1,pepper:1},        st:40,sell:220,v:'bowl', c:['#8fd66a','#e64b3c']},
+  yakitoumo:  {name:'焼きとうもろこし',need:{corn:1},                  st:30,sell:190,v:'corn', c:['#f3cf3f','#9a6a2a']},
+  suikajuice: {name:'スイカジュース', need:{watermelon:1},             st:45,sell:500,v:'cup',  c:['#ff6b6b','#2f7a2c']},
+  yakinasu:   {name:'焼きナス',       need:{eggplant:2},               st:30,sell:150,v:'plate',c:['#6b3d8f','#c9a86a']},
+  furofuki:   {name:'ふろふき大根',   need:{radish:1},                 st:35,sell:220,v:'bowl', c:['#f4efe0','#b8733a']},
+  pumpkinpie: {name:'かぼちゃパイ',   need:{pumpkin:1,egg:1,milk:1},   st:80,sell:750,v:'pie',  c:['#ee8a2b','#d9a066']},
+  yakizakana: {name:'焼き魚',         need:{fish:1},                   st:40,sell:200,v:'fish', c:['#b98755','#f2f2e8']},
+  ohitashi:   {name:'おひたし',       need:{spinach:2},                st:35,sell:300,v:'bowl', c:['#2f7f2a','#f2e2b0']},
+  hakusainabe:{name:'白菜なべ',       need:{hakusai:1,spinach:1,fish:1},st:90,sell:700,v:'pot', c:['#f4f7e8','#2f7f2a']},
 };
 const ITEMS=Object.assign({egg:{name:'たまご',sell:50},eggL:{name:'Lたまご',sell:100},
-  milkS:{name:'ミルク(S)',sell:100},milkM:{name:'ミルク(M)',sell:150},milkL:{name:'ミルク(L)',sell:220}},CROPS);
+  milkS:{name:'ミルク(S)',sell:100},milkM:{name:'ミルク(M)',sell:150},milkL:{name:'ミルク(L)',sell:220}},CROPS,FISH,DISHES);
+const GROUP={milk:['milkS','milkM','milkL'],egg:['egg','eggL'],fish:Object.keys(FISH).sort((a,b)=>FISH[a].sell-FISH[b].sell)};
+const GROUP_NAME={milk:'ミルク',egg:'たまご',fish:'魚'};
 const COW_NAMES=['ハナコ','ミルキー','モモコ','ベル','クルミ','マシュ'];
 const COW_MAX=4, COW_PRICE=3000;
 const milkKind=c=>c.love>=8?'milkL':c.love>=3?'milkM':'milkS';
 const CAN_LV=[20,40,80], CAN_PRICE=[1500,4000];
 const CHICK_NAMES=['ピヨ','コッコ','タマ','ハナ','モモ','チャボ','ゴマ','キナコ'];
-const COST={till:2,water:1,plant:1,cut:1,smash:3,untill:1,clearcrop:1,harvest:0,refill:0,milk:2};
+const COST={till:2,water:1,plant:1,cut:1,smash:3,untill:1,clearcrop:1,harvest:0,refill:0,milk:2,fish:2};
 const KEY='hidamari-farm-v1';
 
 /* ================= helpers ================= */
@@ -647,6 +689,8 @@ function drawCropShape(g,t,st,dead){
     for(let i=0;i<6;i++)leaf(g,0,-2,15+(i%2)*3,6,(i/5-.5)*2.2,i%2?LG:LL,LD);
     if(t==='strawberry')[[-9,-12],[8,-14]].forEach(([x,y])=>{for(let k=0;k<5;k++){const a=k/5*6.28;circ(g,x+Math.cos(a)*2.6,y+Math.sin(a)*2.6,2.2,'#fff');}circ(g,x,y,1.6,'#ffd84a');});
     if(t==='pumpkin')fruit(g,6,-4,5,'#9fd36a','#4f8a3a');
+    if(t==='watermelon')fruit(g,6,-4,6,'#6fbf4a','#2f7a2c');
+    if(t==='cabbage')circ(g,0,-7,6,'#c8e89a');
     return;
   }
   switch(t){
@@ -682,6 +726,40 @@ function drawCropShape(g,t,st,dead){
       line(g,0,0,0,-26,'#5e4a6a',3);
       for(let i=0;i<5;i++)leaf(g,0,-8-i*4,17,8,(i/4-.5)*2.4,i%2?LG:LL,'#6b4a7a');
       [[-9,-10,-.35],[9,-14,.3]].forEach(([x,y,a])=>{ell(g,x,y,5.5,10,'#5b2d7a',a);ell(g,x-1.5,y-2,1.6,4,'rgba(255,255,255,.4)',a);ell(g,x-Math.sin(a)*8,y-9,4.5,3,'#4f8a3a',a);});break;
+    case 'carrot':
+      for(let i=0;i<6;i++){const a=(i/5-.5)*1.9,len=22+(i%2)*6,ex=Math.sin(a)*len,ey=-6-Math.cos(a)*len;
+        g.beginPath();g.moveTo(0,-6);g.quadraticCurveTo(ex*.4,ey*.6,ex,ey);g.strokeStyle=LD;g.lineWidth=1.8;g.stroke();
+        for(let k=1;k<=4;k++){const p=k/4.5;circ(g,ex*p+Math.cos(a)*3,-6+(ey+6)*p,2.6,i%2?LG:LL);circ(g,ex*p-Math.cos(a)*3,-6+(ey+6)*p+1,2.4,LG);}}
+      g.fillStyle='#f08a2b';g.beginPath();g.moveTo(-8,-5);g.quadraticCurveTo(0,-12,8,-5);g.lineTo(3,5);g.lineTo(-3,5);g.closePath();g.fill();
+      line(g,-4,-3,1,-3,'#c9651a',1.3);line(g,-2,1,3,1,'#c9651a',1.3);ell(g,-3,-7,2,1.2,'rgba(255,255,255,.4)');break;
+    case 'cabbage':
+      for(let i=0;i<7;i++)leaf(g,0,-3,20,12,(i/6-.5)*2.9,i%2?'#7fbf5a':'#94cf6c','#5a9a3e');
+      circ(g,0,-12,13.5,rgrad(g,0,-12,13.5,['#effad8','#c8e89a','#94c86a']));
+      g.strokeStyle='rgba(90,140,60,.55)';g.lineWidth=1.3;g.beginPath();g.arc(-4,-11,9,-.6,1.6);g.stroke();g.beginPath();g.arc(5,-10,8,1.6,3.8);g.stroke();
+      ell(g,-4,-18,4,2.2,'rgba(255,255,255,.5)');break;
+    case 'pepper':
+      for(let i=0;i<8;i++)leaf(g,0,-4,17+(i%3)*3,7,(i/7-.5)*2.6,i%2?LG:LL,LD);
+      [[-9,-13,-.35],[8,-18,.3],[2,-7,.1]].forEach(([x,y,a])=>{g.save();g.translate(x,y);g.rotate(a);
+        const gr=g.createLinearGradient(-5,0,5,0);gr.addColorStop(0,'#46b53e');gr.addColorStop(1,'#1f6f22');g.fillStyle=gr;
+        g.beginPath();g.moveTo(-5,-5);g.quadraticCurveTo(-7,5,0,9);g.quadraticCurveTo(7,5,5,-5);g.quadraticCurveTo(0,-8,-5,-5);g.fill();
+        ell(g,-2,-1,1.3,4,'rgba(255,255,255,.5)');g.fillStyle='#3f6f25';rr(g,-1.5,-9,3,5,1.5);g.fill();g.restore();});break;
+    case 'watermelon':
+      leaf(g,-15,-2,22,14,-1.3,LD,'#2f6f25');leaf(g,15,-2,22,14,1.3,LG,LD);
+      g.beginPath();g.moveTo(-20,2);g.bezierCurveTo(-26,-6,-18,-10,-22,-14);g.strokeStyle=LD;g.lineWidth=1.6;g.stroke();
+      g.save();g.beginPath();g.ellipse(0,-11,18,13,0,0,Math.PI*2);g.fillStyle='#3b8f33';g.fill();g.clip();
+      for(let k=-3;k<=3;k++){g.beginPath();g.moveTo(k*6,-24);g.quadraticCurveTo(k*8,-11,k*6,2);g.strokeStyle='#17461a';g.lineWidth=3.2;g.stroke();}
+      ell(g,-6,-17,5,3,'rgba(255,255,255,.3)');g.restore();break;
+    case 'radish':
+      for(let i=0;i<6;i++)leaf(g,0,-16,24+(i%2)*5,8,(i/5-.5)*1.9,i%2?LG:LL,LD);
+      {const gr=g.createLinearGradient(0,-18,0,4);gr.addColorStop(0,'#bfe08a');gr.addColorStop(.35,'#f4f7e6');gr.addColorStop(1,'#ffffff');g.fillStyle=gr;
+        rr(g,-7,-18,14,22,7);g.fill();ell(g,-3,-10,1.8,6,'rgba(255,255,255,.7)');}break;
+    case 'spinach':
+      for(let i=0;i<9;i++)leaf(g,0,-1,15+(i%3)*4,8,(i/8-.5)*3,i%2?'#2f7f2a':'#3f9a36','#1f5f1c');
+      for(let i=0;i<4;i++)line(g,0,0,(i-1.5)*4,-5,'#c0506a',1.6);break;
+    case 'hakusai':
+      ell(g,-7,-15,8,15,'#a8d878',-.18);ell(g,7,-15,8,15,'#a8d878',.18);
+      ell(g,0,-17,8.5,17,'#f6f9ea');ell(g,0,-31,9,5.5,'#8fcf5a');ell(g,-4,-29,5,4,'#a8dc72');
+      line(g,-2,-2,-2,-26,'rgba(200,215,170,.8)',1.5);line(g,3,-2,3,-26,'rgba(200,215,170,.8)',1.5);break;
     case 'sweetpotato':
       ell(g,-9,-1,8,5,'#b8426f',-.3);ell(g,8,0,7,4.5,'#a93a64',.3);ell(g,-11,-3,2.5,1.2,'rgba(255,255,255,.35)',-.3);
       for(let i=0;i<7;i++){const a=(i/6-.5)*2.6;g.save();g.translate(Math.sin(a)*12,-6-Math.cos(a)*10);heart(g,0,0,1.3,i%2?LG:LL);g.restore();}
@@ -704,6 +782,10 @@ function drawToolShape(g,tool,seedCol){
     case 'sickle':line(g,0,4,0,-10,'#9a6a3c',4.5);g.beginPath();g.arc(8,-12,12,Math.PI*1.02,Math.PI*1.9);g.strokeStyle='#b9c2cc';g.lineWidth=3.5;g.stroke();break;
     case 'water':g.fillStyle='#5aa06a';rr(g,-11,-16,20,16,5);g.fill();g.fillStyle='#78bd87';rr(g,-9,-14,8,8,3);g.fill();
       line(g,8,-10,17,-19,'#5aa06a',4);ell(g,18,-20,3.5,2.5,'#3f8050',-.8);g.beginPath();g.arc(-1,-16,7,Math.PI,0);g.strokeStyle='#3f8050';g.lineWidth=2.5;g.stroke();break;
+    case 'rod':line(g,0,6,0,-36,'#8a5a32',2.6);line(g,0,-36,0,-44,'#c9a46a',1.6);g.fillStyle='#3b3a45';rr(g,-2.5,-2,5,10,2);g.fill();
+      circ(g,4,0,4,'#9aa3ad');circ(g,4,0,1.6,'#5f656c');
+      g.beginPath();g.moveTo(0,-44);g.quadraticCurveTo(9,-30,8,-14);g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1;g.stroke();
+      circ(g,8,-12,3,'#e0403a');g.fillStyle='#fff';g.fillRect(5,-12,6,3);break;
     case 'milker':g.fillStyle='#aab3bd';g.beginPath();g.moveTo(-10,-16);g.lineTo(10,-16);g.lineTo(8,2);g.lineTo(-8,2);g.closePath();g.fill();
       g.fillStyle='#d3d9df';g.fillRect(-8,-14,4,14);ell(g,0,-16,10,3.2,'#fbfbf7');line(g,-7,-9,7,-9,'#8a939d',1.5);
       g.beginPath();g.arc(0,-16,11,Math.PI*1.1,Math.PI*1.9);g.strokeStyle='#7d858f';g.lineWidth=2;g.stroke();break;
@@ -717,7 +799,14 @@ function drawToolShape(g,tool,seedCol){
 }
 function iconCanvas(cnv,key){
   const g=cnv.getContext('2d');const s=cnv.width;g.clearRect(0,0,s,s);g.save();g.scale(s/80,s/80);
-  const T={hoe:1,water:1,seed:1,sickle:1,hammer:1,milker:1,hand:1};
+  const T={hoe:1,water:1,seed:1,sickle:1,hammer:1,milker:1,hand:1,rod:1};
+  if(key==='center'){g.beginPath();g.arc(40,42,24,0,Math.PI*2);g.strokeStyle='#8b5a2b';g.lineWidth=4;g.stroke();
+    [[40,10,40,20],[40,64,40,74],[8,42,18,42],[62,42,72,42]].forEach(([a,b,c,d])=>line(g,a,b,c,d,'#8b5a2b',4));
+    circ(g,40,46,11,'#f8d3ae');ell(g,40,38,17,5.5,'#e8c05a');g.fillStyle='#f6da86';g.beginPath();g.ellipse(40,35,9,7,0,Math.PI,0);g.fill();g.fillStyle='#d8443a';g.fillRect(31,33,18,3);
+    circ(g,36,47,1.6,'#3a2414');circ(g,44,47,1.6,'#3a2414');g.restore();return;}
+  if(key==='rod'){g.translate(34,68);g.rotate(.35);g.scale(1.3,1.3);drawToolShape(g,'rod');g.restore();return;}
+  if(FISH[key]){drawFish(g,40,42,FISH[key],1.5);g.restore();return;}
+  if(DISHES[key]){drawDish(g,DISHES[key]);g.restore();return;}
   if(T[key]){g.translate(40,62);g.rotate(.5);g.scale(1.7,1.7);if(key==='water'||key==='seed'||key==='milker'||key==='hand'){g.rotate(-.5);g.translate(-2,6);}drawToolShape(g,key,S&&CROPS[S.seedSel]?CROPS[S.seedSel].col:null);}
   else if(CROPS[key]){g.translate(40,70);g.scale(1.05,1.05);g.drawImage(cropSprite(key,3,false),-40,-84);}
   else if(key==='egg'||key==='eggL'){drawEgg(g,40,52,key==='eggL',1.9);}
@@ -734,6 +823,48 @@ function iconCanvas(cnv,key){
   else if(key==='bag'){g.fillStyle='#c79a63';g.beginPath();g.moveTo(20,30);g.quadraticCurveTo(10,70,24,72);g.lineTo(56,72);g.quadraticCurveTo(70,70,60,30);g.closePath();g.fill();
     g.fillStyle='#a8743f';g.fillRect(24,24,32,10);line(g,30,24,40,14,'#8a5a32',3);line(g,50,24,40,14,'#8a5a32',3);circ(g,40,52,7,'#e0574a');}
   g.restore();
+}
+function drawFish(g,x,y,f,s=1){
+  g.save();g.translate(x,y);g.scale(s*f.len,s*f.len);
+  g.fillStyle=f.col;g.beginPath();g.moveTo(-14,0);g.lineTo(-22,-8);g.lineTo(-20,0);g.lineTo(-22,8);g.closePath();g.fill();
+  g.beginPath();g.moveTo(-6,-7);g.quadraticCurveTo(0,-13,6,-7);g.fill();
+  ell(g,0,0,16,8,f.col);
+  g.save();g.beginPath();g.ellipse(0,0,16,8,0,0,Math.PI*2);g.clip();ell(g,0,5,16,5,f.belly);
+  if(f===FISH.koi){circ(g,-4,-3,4,'#fff6ea');circ(g,6,-4,3,'#fff6ea');}
+  if(f===FISH.nijimasu)g.fillStyle='rgba(230,110,130,.55)',g.fillRect(-16,-1,32,3);
+  for(let i=0;i<4;i++){g.beginPath();g.arc(-6+i*4,0,6,-.6,.6);g.strokeStyle='rgba(0,0,0,.12)';g.lineWidth=1;g.stroke();}
+  g.restore();
+  circ(g,9,-2,2.4,'#fff');circ(g,9.6,-2,1.3,'#1a1a1a');
+  if(f===FISH.namazu){line(g,14,1,22,-3,'#3a3a2a',1.2);line(g,14,2,22,5,'#3a3a2a',1.2);}
+  ell(g,-3,-3,6,1.6,'rgba(255,255,255,.35)');
+  g.restore();
+}
+function drawDish(g,d){
+  const [c0,c1]=d.c;
+  const plate=()=>{ell(g,40,58,30,10,'#d8d2c6');ell(g,40,56,29,9,'#fbfaf6');ell(g,40,56,20,5.5,'#efeae0');};
+  const steam=()=>{g.strokeStyle='rgba(160,150,140,.55)';g.lineWidth=2;g.lineCap='round';
+    for(let i=-1;i<=1;i++){g.beginPath();g.moveTo(40+i*9,24);g.quadraticCurveTo(44+i*9,18,40+i*9,13);g.quadraticCurveTo(36+i*9,8,40+i*9,3);g.stroke();}};
+  switch(d.v){
+    case 'plate':plate();ell(g,40,50,17,9,c0);ell(g,34,46,6,3,'rgba(255,255,255,.35)');
+      for(let i=0;i<5;i++)circ(g,30+i*5,48+(i%2)*3,2.4,c1);steam();break;
+    case 'bowl':ell(g,40,40,26,7,'#8a3a2a');g.fillStyle='#b8452a';g.beginPath();g.moveTo(14,40);g.quadraticCurveTo(16,66,40,66);g.quadraticCurveTo(64,66,66,40);g.fill();
+      ell(g,40,40,23,5.5,c0);for(let i=0;i<5;i++)circ(g,28+i*6,39+(i%2)*2,2.6,c1);
+      g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=2;g.beginPath();g.moveTo(20,46);g.quadraticCurveTo(24,58,34,62);g.stroke();steam();break;
+    case 'cup':g.fillStyle='#fbfaf6';rr(g,24,30,30,34,7);g.fill();g.strokeStyle='#d8d2c6';g.lineWidth=2;g.stroke();
+      g.beginPath();g.arc(56,46,8,-Math.PI/2,Math.PI/2);g.strokeStyle='#fbfaf6';g.lineWidth=4;g.stroke();
+      ell(g,39,32,13,4,c0);g.fillStyle=c1;g.fillRect(24,52,30,5);steam();break;
+    case 'cake':plate();g.fillStyle=c0;rr(g,22,34,36,20,4);g.fill();g.fillStyle=c1;rr(g,20,28,40,9,4);g.fill();
+      g.fillStyle='#f08a2b';g.beginPath();g.moveTo(40,20);g.lineTo(44,30);g.lineTo(36,30);g.fill();leaf(g,40,21,6,3,0,'#5cb546');break;
+    case 'pie':plate();circ(g,40,48,19,c1);circ(g,40,48,15,c0);
+      g.strokeStyle=c1;g.lineWidth=3;for(let i=-1;i<=1;i++){line(g,30,48+i*8,50,48+i*8,c1,3);line(g,40+i*8,38,40+i*8,58,c1,3);}steam();break;
+    case 'corn':plate();g.save();g.translate(40,50);g.rotate(-.35);ell(g,0,0,22,8,c0);
+      for(let i=-3;i<=3;i++)line(g,i*6,-7,i*6-2,7,c1,2.2);line(g,-26,0,-20,0,'#8a5a32',4);g.restore();steam();break;
+    case 'fish':plate();g.save();g.translate(40,50);g.scale(1.25,1.25);drawFish(g,0,0,{col:c0,belly:c1,len:1});g.restore();
+      for(let i=-2;i<=2;i++)line(g,40+i*6,44,38+i*6,52,'rgba(90,50,20,.45)',1.6);ell(g,62,56,4,3,'#f2f2e8');steam();break;
+    case 'pot':ell(g,40,34,27,6,'#3b3a45');g.fillStyle='#4f4e5a';g.beginPath();g.moveTo(13,34);g.lineTo(17,60);g.quadraticCurveTo(40,68,63,60);g.lineTo(67,34);g.fill();
+      ell(g,40,34,24,5,'#f2e6c4');for(let i=0;i<6;i++)ell(g,24+i*6.5,33+(i%2)*2,4,2,i%2?c0:c1);
+      line(g,9,38,15,38,'#3b3a45',4);line(g,65,38,71,38,'#3b3a45',4);steam();break;
+  }
 }
 function drawEgg(g,x,y,big,s=1){g.save();g.translate(x,y);g.scale(s,s);ell(g,0,4,8,3,'rgba(0,0,0,.2)');
   ell(g,0,-4,7.5,9.5,big?'#f7dfa4':'#fbf4e4');ell(g,2,-2,5,7,big?'rgba(200,140,40,.2)':'rgba(200,180,140,.2)');ell(g,-2.5,-8,2,3,'rgba(255,255,255,.8)');
@@ -802,7 +933,7 @@ function faceTo(x,y){const dx=x-P.tx,dy=y-P.ty;if(Math.abs(dx)>Math.abs(dy))P.di
 
 /* ================= actions ================= */
 function getTileAction(x,y,tool){
-  if(isWater(x,y))return tool==='water'?'refill':null;
+  if(isWater(x,y))return tool==='water'?'refill':tool==='rod'?'fish':null;
   const c=cellAt(x,y);if(!c)return null;
   if(isRipe(c.crop))return 'harvest';
   switch(tool){
@@ -818,6 +949,7 @@ function hintFor(x,y){
   const c=cellAt(x,y);if(!c)return null;const tl=S.tool;
   if(tl==='hand')return null;
   if(tl==='milker')return 'ミルカーは牛をタップして使おう';
+  if(tl==='rod')return 'つりざおは池をタップして使おう';
   if(c.obj==='stone'&&tl!=='hammer')return '石はハンマーでくだこう';
   if(c.obj==='weed'&&tl!=='sickle')return '雑草はカマで刈ろう';
   if(tl==='seed'){if(!(S.seeds[S.seedSel]>0))return 'タネがない！よろず屋で買おう';if(!c.til)return 'まずクワで耕そう';}
@@ -845,6 +977,7 @@ function perform(t){
       case 'smash':c.obj=null;dust(wx,wy,'#9aa0a6',14);sfx('smash');break;
       case 'untill':c.til=0;c.wet=0;dust(wx,wy+10,'#8a5a36',6);sfx('till');break;
       case 'clearcrop':c.crop=null;leaves(wx,wy,'#a6844e',8);sfx('cut');break;
+      case 'fish':startFish(wx,wy);break;
       case 'refill':S.can.lv=CAN_LV[S.can.lvl];sfx('water');toast('じょうろを満タンにした！');
         for(let i=0;i<10;i++)PT.push({x:wx+(Math.random()-.5)*20,y:wy,vx:(Math.random()-.5)*50,vy:-80-Math.random()*60,g:300,life:0,max:.6,type:'drop',size:3,col:'#bfe6ff'});break;
       case 'harvest':{const d=CROPS[c.crop.t];S.bag[c.crop.t]=(S.bag[c.crop.t]||0)+1;
@@ -860,7 +993,7 @@ function perform(t){
   if(t.type==='egg'){const e=t.ref;const i=S.eggs.indexOf(e);if(i<0)return;S.eggs.splice(i,1);const k=e.big?'eggL':'egg';S.bag[k]=(S.bag[k]||0)+1;
     faceTo(e.x,e.y);P.act={tool:null,t:0,dur:.2};sparkle(wx,wy,'#fff4b0',8);floatText(wx,wy-20,`${ITEMS[k].name} +1`,'#fff');sfx('pickup');bagPulse();return;}
   if(t.type==='bin'){faceTo(BUILD.bin.x,BUILD.bin.y);shipAll();return;}
-  if(t.type==='house'){P.dir='up';askSleep();return;}
+  if(t.type==='house'){P.dir='up';openHouse();return;}
   if(t.type==='shop'){P.dir='up';if(S.time>=480&&S.time<1080)openShop();else toast('よろず屋は 8:00〜18:00 だよ');return;}
   if(t.type==='cow'){const cw=t.ref;const d=Math.hypot(cw.x-(P.tx+.5),cw.y-(P.ty+.5));if(d>2.2){if((t.tries=(t.tries||0)+1)<3)queue.unshift(t);return;}
     faceTo(Math.floor(cw.x),Math.floor(cw.y));cw.freeze=1.8;cw.face=cw.x<P.x?1:-1;
@@ -878,6 +1011,71 @@ function perform(t){
   if(t.type==='barn'){toast(`牛 ${S.cows.length}頭。ミルカーで1日1回乳しぼりできるよ。毎日なでるとミルクが大きくなる！`);return;}
   if(t.type==='coop'){toast(`ニワトリ ${S.chickens.length}羽。毎朝お庭にたまごを産むよ。なでると大きなたまごに！`);return;}
 }
+/* ---- fishing: cast, wait for the bobber to dip, tap to reel in ---- */
+function startFish(wx,wy){
+  queue=[];cur=null;
+  P.fish={st:'wait',t:0,bite:1.8+Math.random()*3.5,bx:wx+(Math.random()-.5)*16,by:wy+(Math.random()-.5)*10,k:null};
+  sfx('cast');
+}
+function rollFish(){
+  const night=S.time>=1080;
+  const pool=Object.entries(FISH).filter(([,f])=>f.se.includes(S.season)&&(!f.night||night));
+  let r=Math.random()*pool.reduce((a,[,f])=>a+f.w,0);
+  for(const [k,f] of pool){r-=f.w;if(r<=0)return k;}
+  return pool[0][0];
+}
+function reelIn(){
+  const f=P.fish;if(!f)return;
+  if(f.st==='bite'){const k=rollFish();f.st='caught';f.t=0;f.k=k;S.bag[k]=(S.bag[k]||0)+1;
+    for(let i=0;i<14;i++)PT.push({x:f.bx+(Math.random()-.5)*20,y:f.by,vx:(Math.random()-.5)*80,vy:-90-Math.random()*80,g:320,life:0,max:.6,type:'drop',size:3,col:'#cfeaff'});
+    sparkle(P.x*TS,P.y*TS-60,'#fff4b0',10);floatText(P.x*TS,P.y*TS-80,`${FISH[k].name} +1`,'#fff');toast(`${FISH[k].name}を釣った！ (売値 ${FISH[k].sell}G)`);sfx('catch');bagPulse();}
+  else if(f.st==='wait'){toast('まだ早かった…。浮きが沈んだらタップ！');P.fish=null;}
+}
+function updateFish(dt){
+  const f=P.fish;f.t+=dt;
+  if(f.st==='wait'&&f.t>=f.bite){f.st='bite';f.t=0;sfx('bite');}
+  else if(f.st==='bite'&&f.t>=.9){toast('逃げられた…');P.fish=null;}
+  else if(f.st==='caught'&&f.t>=1)P.fish=null;
+}
+function drawFishing(g,t){
+  const f=P.fish;if(!f)return;
+  const side=P.dir==='left'?-1:P.dir==='right'?1:0;
+  const hx=P.x*TS+(side?side*10:12),hy=P.y*TS-8;
+  const tx=hx+(side?side*26:(f.bx>hx?16:-16)),ty=hy-(P.dir==='down'?18:36);
+  line(g,hx,hy,tx,ty,'#8a5a32',3);
+  const dip=f.st==='bite'?5+Math.sin(t*40)*2:0,by=f.by+Math.sin(t*3)*1.5+dip;
+  if(f.st!=='caught'){
+    g.beginPath();g.moveTo(tx,ty);g.quadraticCurveTo((tx+f.bx)/2,Math.max(ty,by)+14,f.bx,by-4);g.strokeStyle='rgba(255,255,255,.75)';g.lineWidth=1.2;g.stroke();
+    const rp=(t*.8)%1;g.strokeStyle=`rgba(255,255,255,${.5*(1-rp)})`;g.lineWidth=1.5;g.beginPath();g.ellipse(f.bx,f.by+3,6+rp*12,2.5+rp*5,0,0,6.28);g.stroke();
+    g.save();g.beginPath();g.rect(f.bx-8,by-12,16,12);g.clip();circ(g,f.bx,by-3,5,'#fff');g.restore();
+    g.save();g.beginPath();g.rect(f.bx-8,by-14,16,9);g.clip();circ(g,f.bx,by-3,5,'#e0403a');g.restore();
+  }
+  if(f.st==='bite'){const x=P.x*TS,y=P.y*TS-92;g.fillStyle='#fff';rr(g,x-11,y-14,22,24,8);g.fill();
+    g.fillStyle='#e0403a';g.font='900 20px "Mochiy Pop One",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('!',x,y-1);}
+  if(f.st==='caught'&&f.k){const lift=Math.min(1,f.t*3);drawFish(g,P.x*TS,P.y*TS-70-lift*10,FISH[f.k],1.3);}
+}
+/* ---- cooking ---- */
+const haveCount=k=>(GROUP[k]||[k]).reduce((a,x)=>a+(S.bag[x]||0),0);
+function consume(k,n){for(const x of GROUP[k]||[k]){while(n>0&&S.bag[x]>0){S.bag[x]--;n--;}if(!S.bag[x])delete S.bag[x];}}
+const canCook=d=>Object.entries(d.need).every(([k,n])=>haveCount(k)>=n);
+function openHouse(){
+  openModal('おうち',`<p style="margin:0">キッチンで料理したり、ベッドで休んだりできます。</p><p class="note">料理は1品20分。食べると体力が回復し、出荷すると素材より高く売れます。</p>`,
+    [{label:'とじる',fn:closeModal},{label:'料理する',fn:openCook},{label:'寝る',cls:'go',fn:()=>{closeModal();sleep(false);}}]);
+}
+function openCook(){
+  const list=Object.entries(DISHES).sort((a,b)=>canCook(b[1])-canCook(a[1]));
+  const h=`<div class="list">`+list.map(([k,d])=>{const ok=canCook(d);
+    const needs=Object.entries(d.need).map(([nk,n])=>{const have=haveCount(nk);return `<span style="color:${have>=n?'#2f6e1f':'#c9453a'}">${GROUP_NAME[nk]||ITEMS[nk].name}×${n}</span>`;}).join(' + ');
+    return `<div class="row" style="${ok?'':'opacity:.72'}"><canvas width="88" height="88" data-icon="${k}"></canvas><div class="info"><div class="nm">${d.name}</div><div class="sub">${needs}<br>体力+${d.st} ・売値 ${d.sell}G${S.bag[k]?` ・持っている ${S.bag[k]}`:''}</div></div>
+      <div class="buy"><button class="btn ${ok?'go':''}" data-cook="${k}" ${ok?'':'disabled'}>つくる</button></div></div>`;}).join('')+`</div>
+    <p class="note">ミルク・たまご・魚はどのサイズや種類でも使えます。できた料理はバッグから食べられます。</p>`;
+  openModal('キッチン',h,[{label:'もどる',fn:openHouse}]);
+  $('#mBody').onclick=e=>{const b=e.target.closest('[data-cook]');if(!b)return;const k=b.dataset.cook,d=DISHES[k];if(!canCook(d))return;
+    for(const [nk,n] of Object.entries(d.need))consume(nk,n);S.bag[k]=(S.bag[k]||0)+1;S.time+=20;sfx('cook');toast(`${d.name}ができた！`);bagPulse();
+    const sc=$('#mBody').scrollTop;openCook();$('#mBody').scrollTop=sc;};
+}
+function eatDish(k){const d=DISHES[k];if(!d||!(S.bag[k]>0))return;S.bag[k]--;if(!S.bag[k])delete S.bag[k];
+  S.stamina=Math.min(S.maxSt,S.stamina+d.st);sfx('pickup');toast(`${d.name}を食べた！ 体力 +${d.st}`);}
 function shipAll(){
   const keys=Object.keys(S.bag).filter(k=>S.bag[k]>0);
   if(!keys.length){toast('出荷するものがない');return;}
@@ -921,6 +1119,10 @@ function sfx(n){if(!AC)return;const t=AC.currentTime;
     case 'buy':tone(mf(76),.08,'triangle',.12,t);tone(mf(83),.16,'triangle',.12,t+.08);break;
     case 'step':noise(.04,.05,700);break;
     case 'moo':tone(150,.7,'sawtooth',.06,t,110);tone(152,.7,'triangle',.08,t,112);break;
+    case 'cast':noise(.25,.25,2500,'highpass');tone(300,.2,'sine',.08,t+.2,120);break;
+    case 'bite':tone(700,.12,'sine',.2,t,250);tone(700,.12,'sine',.2,t+.15,250);break;
+    case 'catch':noise(.3,.3,1200);[76,79,83,88].forEach((m,i)=>tone(mf(m),.2,'triangle',.14,t+.1+i*.07));break;
+    case 'cook':noise(.5,.15,3000,'highpass');tone(mf(88),.4,'sine',.12,t+.45);tone(mf(93),.5,'sine',.1,t+.55);break;
     case 'milk':noise(.3,.2,1800,'bandpass');tone(mf(76),.12,'triangle',.1,t+.3);tone(mf(81),.18,'triangle',.1,t+.4);break;
   }}
 const N=null;
@@ -947,6 +1149,7 @@ function resize(){
   dpr=Math.min(2,window.devicePixelRatio||1);vw=innerWidth;vh=innerHeight;
   cv.width=Math.round(vw*dpr);cv.height=Math.round(vh*dpr);lc.width=cv.width;lc.height=cv.height;
   const td=clamp(Math.min(vw,vh)/8.5,40,76);zoom=td*dpr/TS;
+  if(typeof clampCamX==='function'&&S){camX=clampCamX(camX);camY=clampCamY(camY);}
   const [v,g]=mk(cv.width,cv.height);const gr=g.createRadialGradient(v.width/2,v.height/2,Math.min(v.width,v.height)*.35,v.width/2,v.height/2,Math.hypot(v.width,v.height)*.62);
   gr.addColorStop(0,'rgba(20,15,5,0)');gr.addColorStop(1,'rgba(20,15,5,.38)');g.fillStyle=gr;g.fillRect(0,0,v.width,v.height);vig=v;
   RAIN.length=0;SNOW.length=0;
@@ -1151,6 +1354,7 @@ function render(t,dt){
     if(night>0){ctx.fillStyle=`rgba(255,210,110,${night*.9})`;[[34,154],[BARN_W-78,154]].forEach(([x,y])=>ctx.fillRect(BARN_O.x+x,BARN_O.y+y,44,32));}}});
   if(!onTitle)list.push({y:P.y*TS+18,f:()=>drawPlayer(ctx,t)});
   list.sort((a,b)=>a.y-b.y);for(const d of list)d.f();
+  drawFishing(ctx,t);
   // butterflies
   for(const b of BF){const flap=Math.abs(Math.sin(b.t*16));ctx.save();ctx.translate(b.x,b.y);ctx.fillStyle=b.col;
     ell(ctx,-4*flap,-2,5*flap+1,4,b.col,-.4);ell(ctx,4*flap,-2,5*flap+1,4,b.col,.4);ell(ctx,-3*flap,3,3.5*flap+.5,3,b.col);ell(ctx,3*flap,3,3.5*flap+.5,3,b.col);line(ctx,0,-4,0,4,'#3a2a1a',1.5);ctx.restore();}
@@ -1190,18 +1394,43 @@ function render(t,dt){
   }
   drawWeather(dt);
   if(vig)ctx.drawImage(vig,0,0);
+  drawOffscreenArrow();
 }
 
+/* ================= camera ================= */
+let camVX=0,camVY=0,camGoal=null;
+function clampCamX(x){const v=cv.width/zoom;return v>=MW*TS?(MW*TS-v)/2:clamp(x,0,MW*TS-v);}
+function clampCamY(y){const v=cv.height/zoom;return v>=MH*TS?(MH*TS-v)/2:clamp(y,0,MH*TS-v);}
+function centerOnPlayer(instant){const x=clampCamX(P.x*TS-cv.width/zoom/2),y=clampCamY(P.y*TS-cv.height/zoom/2-TS*.3);camVX=camVY=0;
+  if(instant){camX=x;camY=y;camGoal=null;}else camGoal={x,y};}
+// arrow at the screen edge when the farmer is out of view; tapping it re-centers
+let offArrow=null;
+function drawOffscreenArrow(){
+  offArrow=null;if(onTitle)return;
+  const W=cv.width,H=cv.height,px=(P.x*TS-camX)*zoom,py=((P.y*TS-20)-camY)*zoom,m=10*zoom;
+  if(px>-m&&px<W+m&&py>-m&&py<H+m)return;
+  const pad=46*dpr,top=110*dpr,bot=H-100*dpr;const ax=clamp(px,pad,W-pad),ay=clamp(py,top,bot);
+  const ang=Math.atan2(py-ay,px-ax);offArrow={x:ax/dpr,y:ay/dpr};
+  ctx.save();ctx.translate(ax,ay);
+  ctx.save();ctx.rotate(ang);ctx.fillStyle='#fff8e6';ctx.beginPath();ctx.moveTo(36*dpr,0);ctx.lineTo(18*dpr,-11*dpr);ctx.lineTo(18*dpr,11*dpr);ctx.closePath();ctx.fill();ctx.restore();
+  circ(ctx,0,0,21*dpr,'#8b5a2b');circ(ctx,0,0,18*dpr,'#fff8e6');
+  ctx.scale(dpr*.5,dpr*.5);ctx.translate(-40,-42);
+  circ(ctx,40,46,11,'#f8d3ae');ell(ctx,40,38,17,5.5,'#e8c05a');ctx.fillStyle='#f6da86';ctx.beginPath();ctx.ellipse(40,35,9,7,0,Math.PI,0);ctx.fill();
+  ctx.fillStyle='#d8443a';ctx.fillRect(31,33,18,3);circ(ctx,36,47,1.6,'#3a2414');circ(ctx,44,47,1.6,'#3a2414');
+  ctx.restore();
+}
 /* ================= update ================= */
 let onTitle=true,paused=true,lastHour=-1;
 function update(dt,t){
   // camera
   const vwW=cv.width/zoom,vhW=cv.height/zoom;
-  let tx,ty;
-  if(onTitle){tx=14.5*TS+Math.sin(t*.07)*5*TS-vwW/2;ty=10*TS+Math.cos(t*.05)*3*TS-vhW/2;}
-  else{tx=P.x*TS-vwW/2;ty=P.y*TS-vhW/2-TS*.3;}
-  tx=vwW>=MW*TS?(MW*TS-vwW)/2:clamp(tx,0,MW*TS-vwW);ty=vhW>=MH*TS?(MH*TS-vhW)/2:clamp(ty,0,MH*TS-vhW);
-  const k=onTitle?1:1-Math.pow(.0005,dt);camX=lerp(camX,tx,k);camY=lerp(camY,ty,k);
+  if(onTitle){camX=clampCamX(14.5*TS+Math.sin(t*.07)*5*TS-vwW/2);camY=clampCamY(10*TS+Math.cos(t*.05)*3*TS-vhW/2);}
+  else{
+    const panning=ptr&&ptr.mode==='pan';
+    if(camGoal&&!panning){const k=1-Math.pow(.002,dt);camX=lerp(camX,camGoal.x,k);camY=lerp(camY,camGoal.y,k);if(Math.hypot(camX-camGoal.x,camY-camGoal.y)<1)camGoal=null;}
+    else if(!panning&&(camVX||camVY)){camX+=camVX*dt;camY+=camVY*dt;const f=Math.pow(.02,dt);camVX*=f;camVY*=f;if(Math.hypot(camVX,camVY)<8)camVX=camVY=0;}
+    camX=clampCamX(camX);camY=clampCamY(camY);
+  }
   // particles
   for(let i=PT.length-1;i>=0;i--){const p=PT[i];p.life+=dt;if(p.life>=p.max){PT.splice(i,1);continue;}p.vy+=(p.g||0)*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.vr)p.rot+=p.vr*dt;}
   for(let i=FT.length-1;i>=0;i--){FT[i].life+=dt;if(FT[i].life>1.4)FT.splice(i,1);}
@@ -1231,6 +1460,7 @@ function update(dt,t){
   if(S.time>=1560){passOut();return;}
   // player
   if(P.act){P.act.t+=dt;if(P.act.t>=P.act.dur)P.act=null;}
+  else if(P.fish)updateFish(dt);
   else if(P.path.length){const [nx,ny]=P.path[0];const gx=nx+.5,gy=ny+.5;const dx=gx-P.x,dy=gy-P.y,d=Math.hypot(dx,dy);const sp=4.2*dt;
     if(Math.abs(dx)>Math.abs(dy))P.dir=dx>0?'right':'left';else if(Math.abs(dy)>.01)P.dir=dy>0?'down':'up';
     if(d<=sp){P.x=gx;P.y=gy;P.tx=nx;P.ty=ny;P.path.shift();P.walk+=d;}else{P.x+=dx/d*sp;P.y+=dy/d*sp;P.walk+=sp;}
@@ -1274,7 +1504,7 @@ function endDay(passed){
   S.tomorrow=rollWeather(S.season);
   if(S.weather==='rain')for(const c of S.field)if(c&&c.til)c.wet=1;
   S.time=360;S.stamina=passed?Math.round(S.maxSt/2):S.maxSt;
-  P.x=DOOR.x+.5;P.y=DOOR.y+.5;P.tx=DOOR.x;P.ty=DOOR.y;P.dir='down';P.path=[];P.act=null;queue=[];cur=null;lastHour=-1;
+  P.x=DOOR.x+.5;P.y=DOOR.y+.5;P.tx=DOOR.x;P.ty=DOOR.y;P.dir='down';P.path=[];P.act=null;P.fish=null;queue=[];cur=null;lastHour=-1;
   if(seasonChanged||SPR.se!==S.season)buildSprites(S.season);
   save();
   return{earned,lines,passed,seasonChanged};
@@ -1284,13 +1514,13 @@ function sleep(passed){
   setTimeout(()=>{try{wakeUp(passed);}catch(err){console.error(err);$('#fade').classList.remove('on');$('#modal').hidden=true;paused=false;toast('朝になった！');}},800);
 }
 function wakeUp(passed){
-  {const r=endDay(passed);camX=P.x*TS-cv.width/zoom/2;camY=P.y*TS-cv.height/zoom/2;
+  {const r=endDay(passed);centerOnPlayer(true);
     let html='';
     if(r.passed)html+=`<p style="margin:0 0 10px">夜中まで働きすぎて倒れてしまった…。今日は体力が半分からのスタート。</p>`;
     if(r.lines.length){html+=`<div class="sec">きのうの出荷</div><div class="list">`+r.lines.map(l=>`<div class="kv"><span>${ITEMS[l.k].name} × ${l.n}</span><span>${l.v.toLocaleString()}G</span></div>`).join('')+`</div>
       <div class="total"><span>売上</span><span>${r.earned.toLocaleString()}G</span></div>`;}
     else html+=`<p style="margin:0">きのうは出荷なし。作物やたまごを出荷箱に入れると、翌朝お金になるよ。</p>`;
-    if(r.seasonChanged)html+=`<p style="margin:12px 0 0;font-weight:800;color:${SEASON_COL[S.season]}">季節が「${SEASONS[S.season]}」になった！${S.season===3?'冬は作物が育たない。ニワトリの世話をしよう。':'よろず屋に新しいタネが入荷したよ。'}</p>`;
+    if(r.seasonChanged)html+=`<p style="margin:12px 0 0;font-weight:800;color:${SEASON_COL[S.season]}">季節が「${SEASONS[S.season]}」になった！よろず屋に${SEASONS[S.season]}のタネが入荷したよ。</p>`;
     html+=`<p class="note">今日の天気: ${wLabel(S.weather)} ／ あしたの予報: ${wLabel(S.tomorrow)}</p>`;
     openModal(`${S.year>1?S.year+'年目 ':''}${SEASONS[S.season]} ${S.day}日 (${WEEK[S.total%7]}) の朝`,html,[{label:'おはよう！',cls:'go',fn:()=>{closeModal();$('#fade').classList.remove('on');}}],true);
   }
@@ -1305,7 +1535,7 @@ function toast(msg){const box=$('#toasts');if(box.lastChild&&box.lastChild.textC
   const d=document.createElement('div');d.className='toast';d.textContent=msg;d._t=performance.now();box.appendChild(d);while(box.children.length>3)box.firstChild.remove();setTimeout(()=>d.remove(),3100);}
 let modalLock=false;
 function openModal(title,html,btns,lock){
-  $('#mTitle').textContent=title;$('#mBody').innerHTML=html;const b=$('#mBtns');b.innerHTML='';
+  $('#mTitle').textContent=title;$('#mBody').onclick=null;$('#mBody').innerHTML=html;const b=$('#mBtns');b.innerHTML='';
   (btns||[]).forEach(o=>{const e=document.createElement('button');e.className='btn '+(o.cls||'');e.textContent=o.label;e.onclick=()=>{sfx('tap');o.fn();};b.appendChild(e);});
   $('#mBody').querySelectorAll('canvas[data-icon]').forEach(c=>iconCanvas(c,c.dataset.icon));
   $('#modal').hidden=false;paused=true;modalLock=!!lock;queue=[];cur=null;
@@ -1343,23 +1573,27 @@ function openSeedPicker(){
 }
 function openBag(){
   const ks=Object.keys(S.bag).filter(k=>S.bag[k]>0);
-  let h=ks.length?`<div class="list">`+ks.map(k=>`<div class="row"><canvas width="88" height="88" data-icon="${k}"></canvas><div class="info"><div class="nm">${ITEMS[k].name} × ${S.bag[k]}</div><div class="sub">売値 ${ITEMS[k].sell}G ・合計 ${(ITEMS[k].sell*S.bag[k]).toLocaleString()}G</div></div></div>`).join('')+`</div>`
+  let h=ks.length?`<div class="list">`+ks.map(k=>`<div class="row"><canvas width="88" height="88" data-icon="${k}"></canvas><div class="info"><div class="nm">${ITEMS[k].name} × ${S.bag[k]}</div><div class="sub">${DISHES[k]?`体力+${DISHES[k].st} ・`:''}売値 ${ITEMS[k].sell}G ・合計 ${(ITEMS[k].sell*S.bag[k]).toLocaleString()}G</div></div>${DISHES[k]?`<div class="buy"><button class="btn go" data-eat="${k}">食べる</button></div>`:''}</div>`).join('')+`</div>`
     :`<p style="margin:0">バッグは空っぽ。実った作物や、ニワトリのたまごを拾ってみよう。</p>`;
   const sd=Object.keys(CROPS).filter(k=>S.seeds[k]>0);
   if(sd.length)h+=`<div class="sec">タネ</div><div class="list">`+sd.map(k=>`<div class="kv"><span>${CROPS[k].name}のタネ</span><span>× ${S.seeds[k]}</span></div>`).join('')+`</div>`;
   if(S.binTotal)h+=`<p class="note">出荷箱の中身: 明日の朝 ${S.binTotal.toLocaleString()}G</p>`;
-  h+=`<p class="note">家の横の出荷箱をタップすると、バッグの中身をまとめて出荷できるよ。</p>`;
+  h+=`<p class="note">家の横の出荷箱をタップすると、バッグの中身(料理もふくむ)をまとめて出荷できるよ。料理は家のキッチンで作れる。</p>`;
   openModal('バッグ',h,[{label:'とじる',fn:closeModal}]);
+  $('#mBody').onclick=e=>{const b=e.target.closest('[data-eat]');if(!b)return;eatDish(b.dataset.eat);const sc=$('#mBody').scrollTop;openBag();$('#mBody').scrollTop=sc;};
 }
 function openHelp(first){
   openModal(first?'ひだまり牧場へようこそ！':'あそびかた',`<ol class="howto">
     <li>地面をタップすると歩いていって、<b>下の道具</b>を使うよ。</li>
-    <li>畑を<b>指でなぞる</b>と、まとめて作業できる。</li>
+    <li>画面を<b>スワイプ</b>すると景色を動かせる。右上の帽子ボタンでキャラクターの場所に戻れるよ。</li>
+    <li>畑を<b>長押ししてからなぞる</b>と、まとめて作業できる。</li>
     <li><b>クワ</b>で耕す → <b>タネ</b>をまく → 毎日<b>じょうろ</b>で水やり。水は池でくめる。</li>
     <li>実った作物は<b>タップで収穫</b>。家の横の<b>出荷箱</b>に入れると翌朝お金に。</li>
     <li>ニワトリを<b>なでる</b>と、次の朝に大きなたまごを産むよ。</li>
     <li>牧場の右の牛舎には牛がいるよ。<b>ミルカー</b>を持って牛をタップすると<b>乳しぼり</b>(1日1回)。毎日なでるとミルクが大きくなる。</li>
     <li><b>手ぶら</b>を選ぶと、道具を使わずに移動だけできる。</li>
+    <li><b>つりざお</b>で池をタップすると釣り。浮きが沈んで「！」が出たらすぐタップ！</li>
+    <li><b>家をタップ</b>するとキッチンで料理ができる。料理は食べると体力が回復し、高く売れる。</li>
     <li><b>よろず屋</b>(8:00〜18:00)でタネ・ニワトリ・牛を買える。</li>
     <li>夜は<b>家をタップ</b>して寝よう。深夜2時を過ぎると倒れちゃう。</li>
   </ol><p class="note">タネのボタンをもう一度タップすると、まくタネを選べます。</p>`,[{label:first?'はじめる':'とじる',cls:'go',fn:closeModal}]);
@@ -1367,6 +1601,7 @@ function openHelp(first){
 let bagPulseT=0;function bagPulse(){bagPulseT=.3;}
 const toolBtns=[...document.querySelectorAll('.tool')];
 toolBtns.forEach(b=>b.addEventListener('click',()=>{initAudio();const tl=b.dataset.tool;if(tl==='seed'&&S.tool==='seed')openSeedPicker();else{S.tool=tl;sfx('tap');}refreshIcons();}));
+$('#centerBtn').onclick=()=>{initAudio();sfx('tap');centerOnPlayer(false);};
 $('#bagBtn').onclick=()=>{initAudio();sfx('tap');openBag();};
 $('#helpBtn').onclick=()=>{initAudio();sfx('tap');openHelp(false);};
 $('#musicBtn').onclick=()=>{initAudio();musicOn=!musicOn;try{localStorage.setItem(KEY+'-music',musicOn?'1':'0');}catch(e){}hudCache.music=null;};
@@ -1376,7 +1611,7 @@ const WICON={
   snow:`<svg id="wIcon" viewBox="0 0 24 24"><g stroke="#6f9fd0" stroke-width="2" stroke-linecap="round"><line x1="12" y1="3" x2="12" y2="21"/><line x1="4.2" y1="7.5" x2="19.8" y2="16.5"/><line x1="4.2" y1="16.5" x2="19.8" y2="7.5"/></g><circle cx="12" cy="12" r="2.5" fill="#fff" stroke="#6f9fd0" stroke-width="1.5"/></svg>`};
 const hudCache={};
 function setIf(key,val,fn){if(hudCache[key]!==val){hudCache[key]=val;fn(val);}}
-function refreshIcons(){toolBtns.forEach(b=>{b.classList.toggle('on',b.dataset.tool===S.tool);iconCanvas(b.querySelector('canvas'),b.dataset.tool);});iconCanvas($('#bagBtn canvas'),'bag');hudCache.seed=null;}
+function refreshIcons(){toolBtns.forEach(b=>{b.classList.toggle('on',b.dataset.tool===S.tool);iconCanvas(b.querySelector('canvas'),b.dataset.tool);});iconCanvas($('#bagBtn canvas'),'bag');iconCanvas($('#centerBtn canvas'),'center');hudCache.seed=null;}
 function updateHUD(){
   setIf('season',S.season,v=>{const p=$('#seasonPill');p.textContent=SEASONS[v];p.style.background=SEASON_COL[v];});
   setIf('date',`${S.year>1?S.year+'年目 ':''}${S.day}日 (${WEEK[S.total%7]})`,v=>$('#dateTxt').textContent=v);
@@ -1396,7 +1631,7 @@ function updateHUD(){
 
 /* ================= input ================= */
 function toWorld(e){return{x:camX+e.clientX*dpr/zoom,y:camY+e.clientY*dpr/zoom};}
-function pickTarget(w){
+function pickTarget(w,quiet){
   const tx=Math.floor(w.x/TS),ty=Math.floor(w.y/TS);
   for(const cw of S.cows)if(Math.abs(w.x-cw.x*TS)<38&&w.y>cw.y*TS-62&&w.y<cw.y*TS+8)return{type:'cow',ref:cw};
   for(const ch of S.chickens)if(Math.hypot(w.x-ch.x*TS,w.y-(ch.y*TS-14))<30)return{type:'chicken',ref:ch};
@@ -1410,26 +1645,55 @@ function pickTarget(w){
   if(!inB(tx,ty))return null;
   const k=getTileAction(tx,ty,S.tool);
   if(k)return{type:'tile',x:tx,y:ty,kind:k};
-  const h=hintFor(tx,ty);if(h)toast(h);
-  if(isWater(tx,ty))toast('じょうろを選ぶと水をくめるよ');
+  if(!quiet){const h=hintFor(tx,ty);if(h)toast(h);
+    if(isWater(tx,ty))toast('じょうろで水くみ、つりざおで釣りができるよ');}
   return{type:'walk',x:tx,y:ty};
+}
+// one finger: tap = act, swipe = move the view, press and hold then trace = work many tiles
+let ptr=null;
+const HOLD_MS=350,SLOP=10;
+function doTap(e){
+  if(offArrow&&Math.hypot(e.clientX-offArrow.x,e.clientY-offArrow.y)<30){centerOnPlayer(false);sfx('tap');return;}
+  const w=toWorld(e);const t=pickTarget(w);if(!t)return;
+  tapFx={x:w.x,y:w.y,t:0};sfx('tap');command(t);
+}
+function startTrace(){
+  const w=toWorld({clientX:ptr.sx,clientY:ptr.sy});const t=pickTarget(w,true);
+  if(!t||t.type!=='tile'){ptr.mode='hold';return;}
+  ptr.mode='trace';ptr.kind=t.kind;ptr.seen=new Set([t.x+','+t.y]);
+  tapFx={x:w.x,y:w.y,t:0};sfx('plant');command(t);
+  try{navigator.vibrate&&navigator.vibrate(15);}catch(_){}
 }
 cv.addEventListener('pointerdown',e=>{
   initAudio();if(paused||onTitle)return;e.preventDefault();
-  const w=toWorld(e);const t=pickTarget(w);if(!t)return;
-  tapFx={x:w.x,y:w.y,t:0};sfx('tap');
-  const tx=Math.floor(w.x/TS),ty=Math.floor(w.y/TS);
-  drag={id:e.pointerId,kind:t.type==='tile'?t.kind:null,seen:new Set([tx+','+ty])};
-  command(t);try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  if(P.fish){reelIn();return;}
+  if(ptr)return;
+  ptr={id:e.pointerId,sx:e.clientX,sy:e.clientY,lx:e.clientX,ly:e.clientY,lt:performance.now(),mode:'pending',vx:0,vy:0};
+  camVX=camVY=0;camGoal=null;
+  ptr.timer=setTimeout(()=>{if(ptr&&ptr.mode==='pending')startTrace();},HOLD_MS);
+  try{cv.setPointerCapture(e.pointerId);}catch(_){}
 });
 cv.addEventListener('pointermove',e=>{
-  if(!drag||drag.id!==e.pointerId||!drag.kind||paused)return;
-  const w=toWorld(e);const tx=Math.floor(w.x/TS),ty=Math.floor(w.y/TS);const key=tx+','+ty;if(drag.seen.has(key))return;drag.seen.add(key);
-  const k=getTileAction(tx,ty,S.tool);
-  if(k&&k===drag.kind){queue.push({type:'tile',x:tx,y:ty,kind:k});}
+  if(!ptr||ptr.id!==e.pointerId)return;
+  const now=performance.now(),dx=e.clientX-ptr.lx,dy=e.clientY-ptr.ly,dt=Math.max(1,now-ptr.lt)/1000;
+  if(ptr.mode==='trace'){
+    if(paused)return;
+    const w=toWorld(e);const tx=Math.floor(w.x/TS),ty=Math.floor(w.y/TS);const key=tx+','+ty;
+    if(!ptr.seen.has(key)){ptr.seen.add(key);const k=getTileAction(tx,ty,S.tool);if(k&&k===ptr.kind)queue.push({type:'tile',x:tx,y:ty,kind:k});}
+  }else{
+    if(ptr.mode!=='pan'&&Math.hypot(e.clientX-ptr.sx,e.clientY-ptr.sy)>SLOP){ptr.mode='pan';clearTimeout(ptr.timer);}
+    if(ptr.mode==='pan'){const wx=-dx*dpr/zoom,wy=-dy*dpr/zoom;camX=clampCamX(camX+wx);camY=clampCamY(camY+wy);
+      ptr.vx=lerp(ptr.vx,wx/dt,.5);ptr.vy=lerp(ptr.vy,wy/dt,.5);}
+  }
+  ptr.lx=e.clientX;ptr.ly=e.clientY;ptr.lt=now;
 });
-const endDrag=e=>{if(drag&&drag.id===e.pointerId)drag=null;};
-cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
+cv.addEventListener('pointerup',e=>{
+  if(!ptr||ptr.id!==e.pointerId)return;clearTimeout(ptr.timer);
+  if(ptr.mode==='pending'||ptr.mode==='hold'){if(!paused)doTap(e);}
+  else if(ptr.mode==='pan'&&performance.now()-ptr.lt<80){const sp=Math.hypot(ptr.vx,ptr.vy),mx=2500/Math.max(sp,2500);camVX=ptr.vx*mx;camVY=ptr.vy*mx;}
+  ptr=null;
+});
+cv.addEventListener('pointercancel',e=>{if(ptr&&ptr.id===e.pointerId){clearTimeout(ptr.timer);ptr=null;}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&S&&!onTitle)save();});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 
@@ -1439,7 +1703,7 @@ function startGame(state,isNew){
   P.x=S.px+.5;P.y=S.py+.5;P.tx=S.px;P.ty=S.py;P.path=[];P.dir='down';
   if(SPR.se!==S.season)buildSprites(S.season);
   $('#title').hidden=true;$('#hud').hidden=false;$('#toolbar').hidden=false;
-  hudCache.music=null;refreshIcons();paused=false;
+  hudCache.music=null;refreshIcons();paused=false;centerOnPlayer(true);
   if(isNew){save();openHelp(true);}
   else toast(`${SEASONS[S.season]} ${S.day}日 ${wLabel(S.weather)}。おかえりなさい！`);
 }
